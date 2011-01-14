@@ -1,10 +1,10 @@
 Copyright &copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>
 &nbsp;|&nbsp;
-Powered by <a href="http://savorybookmarks.com/">Savory Bookmarks</a>
+Powered by <a href="http://tagology.com/">Tagology</a>
 
 <br/>
 
-Share on this site: drag this <a class="bookmarklet" href="<?php the_bookmarklet_link(); ?>">Savor It!</a> bookmarklet to your toolbar.
+Share on this site: drag this <a class="bookmarklet" href="<?php the_bookmarklet_link(); ?>">Tag It!</a> bookmarklet to your toolbar.
 
 <br/>
 <a rel="license" href="http://creativecommons.org/licenses/by/3.0/"><img alt="Creative Commons License" style="border-width:0;vertical-align:middle" src="http://i.creativecommons.org/l/by/3.0/80x15.png" /></a> This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 Unported License</a>.
