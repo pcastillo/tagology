@@ -1,7 +1,7 @@
 <?php get_header(); ?>
 <div id="contentboard">
 <div class="container">
-<?php trough_get_template_part( 'theme-sidebar', 'single' ); ?>
+<?php get_template_part( 'theme-sidebar', 'single' ); ?>
 <div id="content" class="column last">
 <div class="inner">
 <div class="inner2">	

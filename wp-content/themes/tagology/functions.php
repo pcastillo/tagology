@@ -1,23 +1,25 @@
 <?php
 
 // the plugin is deployed with the theme
-require_once( TEMPLATEPATH . '/plugin.savory.php' );
+require_once( TEMPLATEPATH . '/plugin.tagology.php' );
 
 if(!defined('WP_THEME_URL'))
   define( 'WP_THEME_URL', get_stylesheet_directory_uri() );
 
 /*
- * action to inject CSS to determine the column width of the sidebar and content areas
- */
-//add_action( 'wp_head', 'trough_style_decl');
-
-/*
  * is savory in multi-user mode?
  */
 function is_savory_multi_user() {
-  global $savory_plugin;
-  $options = $savory_plugin->get_options();
+  global $tagology_plugin;
+  $options = $tagology_plugin->get_options();
   return ($options['is_multiuser']);
+}
+
+/*
+ * display the sidebar?
+ */
+function tagology_show_sidebar() {
+  return false; // for now...
 }
 
 /*
@@ -25,11 +27,11 @@ function is_savory_multi_user() {
  */
 add_filter('the_date', 'savory_the_date_filter', 15, 4);
 function savory_the_date_filter($the_date, $d, $before, $after) {
-  global $savory_plugin;
+  global $tagology_plugin;
   $arc_year = get_the_time('Y');
   $arc_month = get_the_time('m');
   $arc_day = get_the_time('d');
-  return sprintf ('<a href="%s">%s</a>', $savory_plugin->get_day_link($arc_year, $arc_month, $arc_day), $the_date );
+  return sprintf ('<a href="%s">%s</a>', $tagology_plugin->get_day_link($arc_year, $arc_month, $arc_day), $the_date );
 }
 
 /*
@@ -80,7 +82,7 @@ function savory_your_bookmarks_link() {
  */
 function savory_facebook_share_link($bookmark = false) {
   // http://www.facebook.com/sharer.php?u=<url to share>&t=<title of content>
-  global $savory_plugin;
+  global $tagology_plugin;
   
   if (!$bookmark) {
     global $post;
@@ -95,7 +97,7 @@ function savory_facebook_share_link($bookmark = false) {
  * add to google reader link - template tag
  */
 function savory_add_to_google_link($bookmark = false) {
-  global $savory_plugin;
+  global $tagology_plugin;
   
   if (!$bookmark) {
     global $post;
@@ -110,14 +112,14 @@ function savory_add_to_google_link($bookmark = false) {
  * tweet link - template tag
  */
 function savory_tweet_link($bookmark = false) {
-  global $savory_plugin;
+  global $tagology_plugin;
   
   if (!$bookmark) {
     global $post;
     $bookmark = $post;
   }
   
-  $msg = $savory_plugin->get_short_message($bookmark);
+  $msg = $tagology_plugin->get_short_message($bookmark);
   printf( '<a target="twitter" href="http://twitter.com/?status=%s">tweet</a>', rawurlencode($msg) );
 }
 
@@ -142,8 +144,8 @@ function the_savory_link() {
  * template tag - echo an IMG tag of the URL link favicon
  */
 function the_favicon() {
-  global $savory_plugin;
-  $url = $savory_plugin->get_the_favicon_url();
+  global $tagology_plugin;
+  $url = $tagology_plugin->get_the_favicon_url();
   echo sprintf("<img class=\"favicon\" src=\"http://s2.googleusercontent.com/s2/favicons?domain=%s\"/>", $url);
 }
 
@@ -151,13 +153,13 @@ function the_favicon() {
  * display popular tags - template tag 
  */
 function the_popular_tags($before = "<ul class='recenttags'><li>", $between = "</li><li>", $after = "</li></ul>") {
-  global $savory_plugin;
+  global $tagology_plugin;
   
   // before  
   echo $before;
   
   // each tag
-  $tags = $savory_plugin->get_popular_tags();     
+  $tags = $tagology_plugin->get_popular_tags();     
   $tag_a = array_map('savory_tag_html', $tags );
   echo implode($between, $tag_a);    
   
@@ -169,13 +171,13 @@ function the_popular_tags($before = "<ul class='recenttags'><li>", $between = "<
  * display recent tags - template tag
  */
 function the_recent_tags($before = "<ul class='recenttags'><li>", $between = "</li><li>", $after = "</li></ul>") { 
-  global $savory_plugin;
+  global $tagology_plugin;
   
   // before  
   echo $before;
   
   // each tag
-  $tags = $savory_plugin->get_recent_tags();     
+  $tags = $tagology_plugin->get_recent_tags();     
   $tag_a = array_map('savory_tag_html', $tags );
   echo implode($between, $tag_a);    
   
