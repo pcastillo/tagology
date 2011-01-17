@@ -25,8 +25,8 @@ if (!is_user_logged_in()) {
 }
 
 // attempt to add it
-global $savory_plugin;
-if ($savory_plugin->insert_bookmark($hash, $url, $desc, $taglist, $time)) {
+global $tagology_plugin;
+if ($tagology_plugin->insert_bookmark($hash, $url, $desc, $taglist, $time)) {
  echo '<img src="' . WP_THEME_URL . '/bookmarklet/success.png"/>';
  echo "&nbsp;Success!";
  $bookmark = $this->bookmark_exists($url);

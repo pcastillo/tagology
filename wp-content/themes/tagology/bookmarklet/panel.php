@@ -23,15 +23,15 @@ jQuery(document).ready(function($) {
 $display_form = true;
 
 function savory_social($bookmark) {
-  global $savory_plugin;
-  $msg = $savory_plugin->get_short_message($bookmark);
+  global $tagology_plugin;
+  $msg = $tagology_plugin->get_short_message($bookmark);
   echo $msg;
   echo '<img src="' . WP_THEME_URL . '/bookmarklet/twitter.png"/>';
 }
 
 // get parameters
 global $wp_query;
-global $savory_plugin;
+global $tagology_plugin;
 $url = $wp_query->query_vars['url'];
 $title = $wp_query->query_vars['title'];
 $hosturl = sprintf('http://%s/', parse_url($url, PHP_URL_HOST));
@@ -46,9 +46,9 @@ if (!is_user_logged_in()) {
 }
 
 // get the bookmark if it exists
-$bookmark = $savory_plugin->bookmark_exists($url);
+$bookmark = $tagology_plugin->bookmark_exists($url);
 if ($bookmark)
-  $taglist = $savory_plugin->get_tags($bookmark);
+  $taglist = $tagology_plugin->get_tags($bookmark);
 
 if ($display_form) {
 $action = get_bloginfo('url') . '/bookmarklet/new/';
