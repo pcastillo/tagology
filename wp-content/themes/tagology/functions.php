@@ -159,9 +159,11 @@ function the_popular_tags($before = "<ul class='recenttags'><li>", $between = "<
   echo $before;
   
   // each tag
-  $tags = $tagology_plugin->get_popular_tags();     
-  $tag_a = array_map('savory_tag_html', $tags );
-  echo implode($between, $tag_a);    
+  $tags = $tagology_plugin->get_popular_tags();
+  if (0 < count($tags)) {     
+    $tag_a = array_map('savory_tag_html', $tags );
+    echo implode($between, $tag_a); 
+  }
   
   // after
   echo $after;   
