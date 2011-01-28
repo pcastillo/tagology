@@ -11,7 +11,7 @@ define ('SAVORY_METAKEY_URL', '_SAVORY_URL');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.908
+Version: 0.1.913
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -33,7 +33,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.908';
+	public $plugin_version = '0.1.913';
 	/*
 	* constructor
 	*/
@@ -82,6 +82,7 @@ class WpTagologyPlugin {
 			'import_bookmark_file' => '',
 			'import_recent_bookmarks' => '',
 			'is_multiuser' => '',
+			'bookmarklet_text' => '',
 
 		);
 		$options = get_option(WP_TAGOLOGY_OPTS);	
@@ -114,6 +115,7 @@ class WpTagologyPlugin {
 			if (!wp_verify_nonce($nonce, 'update-options'))
 				die ("Can't do that!");		
 				$options['is_multiuser'] = (isset($_POST['is_multiuser']))?true:false;
+				$options['bookmarklet_text'] = stripslashes($_POST['bookmarklet_text']);
 				
       update_option(WP_TAGOLOGY_OPTS, $options);
 ?>
@@ -155,6 +157,12 @@ class WpTagologyPlugin {
 		<input <?php echo $options['is_multiuser'] ? 'checked=checked' : '' ?> type="checkbox" id="is_multiuser" name="is_multiuser" value="1"/></label><br />
 	</td>
 </tr>		
+<tr valign="top">
+	<th scope="row"><label for="bookmarklet_text">Bookmarklet Text</label></th>
+	<td>
+		<input type="text" size="80" id="bookmarklet_text" name="bookmarklet_text" value="<?php echo esc_attr($options['bookmarklet_text']); ?>"/><br />
+	</td>
+</tr>			
 
 </tbody></table>
 <input type="hidden" name="action" value="update" />
@@ -415,7 +423,8 @@ class WpTagologyPlugin {
             INNER JOIN $wpdb->term_taxonomy ON ($wpdb->terms.term_id = $wpdb->term_taxonomy.term_id)
             INNER JOIN $wpdb->term_relationships ON ($wpdb->terms.term_id = $wpdb->term_relationships.term_taxonomy_id)
             INNER JOIN $wpdb->posts ON ($wpdb->term_relationships.object_id = $wpdb->posts.ID)
-            WHERE $wpdb->term_taxonomy.taxonomy = 'post_tag' %user%
+            WHERE $wpdb->term_taxonomy.taxonomy = 'post_tag' 
+            %user%
             ORDER BY $wpdb->posts.post_date DESC LIMIT 1, $limit"; 
     
     // user constraints
@@ -448,7 +457,7 @@ class WpTagologyPlugin {
     // return raw results
     return $wpdb->get_results($wpdb->prepare($sql));
   }
-
+  
   /*
    * get popular tags
    */
@@ -460,6 +469,7 @@ class WpTagologyPlugin {
       //'echo' => 0,
       'orderby' => 'count',
       'order' => 'DESC',
+      
     );
     
     //$cloud = wp_tag_cloud($args);
@@ -589,7 +599,8 @@ class WpTagologyPlugin {
    */
   function insert_bookmark($hash, $href, $desc, $taglist, $time, $replace = true) {
 
-    //echo "Trying $hash, $href, $desc, $taglist, $time";
+    // echo "Trying $hash, $href, $desc, $taglist, $time";
+    // die();
     
     // check for existence
     $myposts = get_posts(array(

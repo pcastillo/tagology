@@ -124,12 +124,24 @@ function savory_tweet_link($bookmark = false) {
 }
 
 /*
- * the_bookmarklet_link
+ * echo the bookmarklet link
  */
 function the_bookmarklet_link() {
   $link = sprintf("javascript:var e=document.createElement('script');e.setAttribute('language','javascript');e.setAttribute('src','%s');document.body.appendChild(e);void(0);",
   get_bloginfo('url').'/bookmarklet/js/');
   echo $link;
+}
+
+/*
+ * echo the bookmarket text
+ */
+function the_bookmarket_text() {
+  global $tagology_plugin;
+  $options = $tagology_plugin->get_options();
+  $text = $options['bookmarklet_text'];
+  if (empty($text))
+    $text = 'Tag It!';
+  echo $text;
 }
 
 /*
