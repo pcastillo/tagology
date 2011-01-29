@@ -1,10 +1,10 @@
 <html>
-<body>
 <head>
 <style>
 BODY { font-family: "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 0; background:#eee;}
 </style>
 </head>
+<body>
 <?php
 
 // get parameters

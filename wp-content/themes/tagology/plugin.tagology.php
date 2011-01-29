@@ -11,7 +11,7 @@ define ('SAVORY_METAKEY_URL', '_SAVORY_URL');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.913
+Version: 0.1.925
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -33,7 +33,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.913';
+	public $plugin_version = '0.1.925';
 	/*
 	* constructor
 	*/
@@ -254,10 +254,12 @@ class WpTagologyPlugin {
 			case 'bookmarklet/new' :
 				$this->bookmarklet_redirect('bookmarklet/new.php');
 				break;
+			case 'bookmarklet/logout' :
+				$this->bookmarklet_redirect('bookmarklet/logout.php');
+				break;
       case 'shortlink': 
         $this->shortlink_redirect();
-        break;
-      
+        break;      
       //default:
       //  wp_die("Not Found.");
       //  break;
