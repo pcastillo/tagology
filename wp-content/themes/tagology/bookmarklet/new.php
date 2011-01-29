@@ -1,7 +1,8 @@
 <html>
 <head>
 <style>
-BODY { font-family: "Helvetica Neue", Arial, sans-serif; margin: 0; padding: 0; background:#eee;}
+* { font-size: 10pt !important;font-family:"Helvetica Neue",Arial,sans-serif;}
+BODY { margin:0;padding:0;background:#eee;}
 </style>
 </head>
 <body>
