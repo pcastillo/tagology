@@ -7,6 +7,36 @@ if(!defined('WP_THEME_URL'))
   define( 'WP_THEME_URL', get_stylesheet_directory_uri() );
 
 /*
+ * echo the tagology path - used in the loop
+ */
+function the_tagology_path() {
+  global $post;  
+  $url = get_post_meta($post->ID, '_SAVORY_URL', true);
+  $parts = parse_url($url);
+  if (false !== $parts) {
+    $path = @$parts['path'];
+    $qs = @$parts['query'];
+    $fi = @$parts['fragment'];
+    
+    $mash = $path;
+    if (!empty($qs))
+      $mash .= '?' . $qs;
+    if (!empty($fi))
+      $mash .= '#' . $fi;
+    if ('/'!= $mash) {
+      echo tagology_short_text($mash, 50, '&hellip;');
+    }
+  }
+}
+
+/*
+ * echo the brand
+ */
+function the_tagology_brand() { ?>
+<span id="pwrdby">Powered by <span class="tag">TAG</span><span class="ology">ology</span></span>
+<?php }
+
+/*
  * is savory in multi-user mode?
  */
 function is_savory_multi_user() {
@@ -204,14 +234,25 @@ function savory_tag_html($x) {
 }
   
 /*
- * template tag - the host name of the URL link
+ * echo the host name of the bookmark - used in the loop
  */
-function savory_the_source() {
-  global $post;
-  
+function the_tagology_source() {
+  global $post;  
   $url = get_post_meta($post->ID, '_SAVORY_URL', true);
   $host = parse_url($url, PHP_URL_HOST);
   echo $host;
+}
+
+/*
+ * shorten text with an optional trailing string if the length is exceeded
+ */
+function tagology_short_text($text, $length, $after = '') {
+	if ( strlen($text) > $length ) {
+    $text = substr($text,0,$length);
+    echo $text . $after;
+	} else {
+    echo $text;
+	}
 }
 
 /*

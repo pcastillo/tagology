@@ -1,5 +1,42 @@
+/* 
+  Tagology Style
+
+  see: http://www.colourlovers.com/palette/443995/i_demand_a_pancake 
+ 
+*/
+
 BODY {
   background: white;
+}
+
+H1, H2, H3, H4, H5, .title A {
+  font-family: 'Cabin', 'arial', 'sans-serif';
+}
+
+A { 
+  color: #547980;
+}
+
+A:hover, A:active {
+  color: #45ADA8;
+}
+
+#pwrdby .tag {
+  background: #45ADA8;
+  color: white;
+  font-weight: bold;
+  padding: 2px;
+  margin: 2px 1px 2px 2px;
+  -moz-border-radius: 5px;
+  -webkit-border-radius: 5px;
+  -khtml-border-radius: 5px;              
+  border-radius: 5px; 
+}
+
+#pwrdby .ology {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #594F4F;
 }
 
 #searchform {
@@ -75,6 +112,7 @@ A.post-edit-link {
 .tags {
   clear: both;
   padding-left: 0;
+  float: right;
 }
 
 .recenttags {
@@ -82,16 +120,17 @@ A.post-edit-link {
 }
 
 .tags LI {
-  float: right;
-  margin-left: 2px;
+  margin-left: 0px;
+  padding-right: .3em;
 }
 
 .tags A, 
 .recenttags A {
   text-decoration: none;
   padding: 2px 3px;
-  background: #eee;
+  background: #fff;
   color: #333;
+  border: 1px solid white;
 }
 
 .tags A.tag_me {
@@ -100,8 +139,20 @@ A.post-edit-link {
 
 .tags A:hover,
 .recenttags A:hover {
-  background: #333;
-  color: #EEE;
+  background: #999;
+  color: #fff;
+}
+
+.tags A:focus,
+.recenttags A:focus {
+  
+  border: 1px dashed #999;
+  /*background: #999;
+  color: #fff;*/
+}
+
+.tags .h {
+  color: #ccc;
 }
 
 .recenttags {
@@ -422,6 +473,11 @@ div.aligncenter {
 	text-decoration: none;
 }
 
+.title .path { 
+  color: #999;
+  font-size: 0.85em;
+}
+
 #content P { }
 
 .post-categories, 
@@ -433,7 +489,6 @@ div.aligncenter {
 .post-categories LI,
 .tags LI {
 	list-style-type: none;
-	padding-right: 1em;
 	display: inline;
 }
 
@@ -612,6 +667,42 @@ div.aligncenter {
 
 #subfooter A:hover {
 	text-decoration: underline;
+}
+
+/* SKIP LINKS */
+
+#skip{
+  position: absolute;
+	left: 0;
+	top: 0;
+	width: 100%;
+	text-align: center;
+	list-style: outside none;
+}
+ 
+#skip a {
+	position: absolute;
+	left: -99999px;
+	top: 30px;
+}
+ 
+#skip a:focus, #skip a:active{
+	position: relative;
+	left: 0;
+	z-index:9999;
+	width: 75%;
+	height: auto;
+	margin: 0 auto;
+	padding: 30px 45px;
+	text-align: center;
+	text-decoration: none;
+	letter-spacing: -4px !important;
+	font: bold 50px "Arial", "Freesans", sans-serif !important;
+	/* color information, edit this to suit the colors of your layout */
+    color: #AEAEFE;
+	/*background: transparent url(transparent.png) repeat scroll 0 0;*/
+	border: 1px dotted #ffb4db;
+ 
 }
 
 

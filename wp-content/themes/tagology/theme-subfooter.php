@@ -1,6 +1,6 @@
 Copyright &copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>
 &nbsp;|&nbsp;
-Powered by <a href="http://tagology.com/">Tagology</a>
+<?php the_tagology_brand(); ?>
 <br/>
 Share on this site: drag this <a class="bookmarklet" href="<?php the_bookmarklet_link(); ?>"><?php the_bookmarket_text(); ?></a> bookmarklet to your toolbar.
 <br/>

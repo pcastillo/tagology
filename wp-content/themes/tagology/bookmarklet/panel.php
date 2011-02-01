@@ -36,9 +36,9 @@ function savory_social($bookmark) {
 function tagology_login_form() {
   // see: http://www.wprecipes.com/add-a-login-form-on-your-wordpress-theme
 ?>
-<?php if (!(current_user_can('level_0'))){ ?>
+<?php if (!(current_user_can('level_0'))){ get_currentuserinfo(); if (empty($user_login)) { $user_login = ''; } ?>
 <form action="<?php echo get_option('home'); ?>/wp-login.php" method="post">
-<label for="log">username</label> <input type="text" name="log" id="log" value="<?php echo wp_specialchars(stripslashes($user_login), 1) ?>" size="20" />
+<label for="log">username</label> <input type="text" name="log" id="log" value="<?php echo esc_html(stripslashes($user_login), 1) ?>" size="20" />
 <label for="pwd">password</label> <input type="password" name="pwd" id="pwd" size="20" />
 <input type="submit" name="submit" value="Login" class="button" />
 <input type="hidden" name="redirect_to" value="<?php echo $_SERVER['REQUEST_URI']; ?>" />
