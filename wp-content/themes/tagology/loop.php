@@ -7,15 +7,25 @@
 <span class="path"><?php the_tagology_path(); ?></span>
 </div>
 <div class="source">
-<?php if (is_savory_multi_user()) : ?>
-<span class="author"><?php the_author_posts_link(); ?></span> | 
-<?php endif; ?>
 <!--&#x25B9;--><?php the_favicon(); ?><?php the_tagology_source(); ?><span class="tools"> <?php edit_post_link( 'edit', ' | ', ''); ?>
 &nbsp;|&nbsp;<?php savory_tweet_link(); ?>
-&nbsp;|&nbsp;<?php savory_facebook_share_link(); ?>
-<?php /* not ready yet savory_add_to_google_link(); */ ?>
+&nbsp;|&nbsp;<?php the_tagology_facebook_share_link(); ?>
 </span></div>
-<ul class="tags"><?php the_tags( '<li>','</li><li>','</li>' ); ?></ul>
+<ul class="tags">
+<li><span class="author">
+<?php if (is_tagology_multi_user()) : ?>
+<?php
+ 	global $authordata;
+	$link = sprintf(
+		'<a href="%1$s" title="%2$s">',
+		get_author_posts_url( $authordata->ID, $authordata->user_nicename ),
+		esc_attr( sprintf( __( 'Posts by %s' ), get_the_author() ) )
+	);
+  echo $link . get_avatar( $post->ID, $size = '16') . '</a>';
+?>
+</span></li>
+<?php endif; ?>
+<?php the_tags( '<li>','</li><li>','</li>' ); ?></ul>
 <div class="clearfix"></div>
 </div>
 

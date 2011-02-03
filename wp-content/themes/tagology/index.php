@@ -20,9 +20,6 @@
 POPULAR: 
 <?php the_popular_tags(); ?>
 <br/>
-RECENT:
-<?php the_recent_tags(); ?>	
-<br/>
 <br/>
 <?php if (have_posts()) : ?>
   <?php while (have_posts()) : the_post(); ?>

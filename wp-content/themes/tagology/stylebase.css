@@ -117,6 +117,25 @@ A.post-edit-link {
   float: right;
 }
 
+.tags .author A {
+  border: 0;
+}
+
+.tags .author A IMG {
+  border: 1px solid white;
+  padding: 0;
+  margin: 0;
+}
+
+.tags .author A:hover {
+  border: 0;
+  background: inherit;
+}
+
+.tags .author A:hover IMG {
+  border: 1px solid #999;
+}
+
 .recenttags {
   padding-left: 0;
 }
@@ -517,13 +536,6 @@ div.aligncenter {
 .single .post {
 	margin-bottom: 1em;
 }
-
-/* AUTHOR BIO BOX 
-.postauthor { background: #F5F5F5; border-top: 1px solid #e1e1e0; border-bottom: 1px solid #e1e1e0; overflow: hidden; padding: 1.5em; }
-.postauthor img { border: 5px solid #e2dede; float: left; margin-right: 1.5em; max-width: 48px; max-height: 48px; }
-.postauthor h4 { color: #666; font-size: 2em; margin-bottom: 5px; }
-.postauthor p { color: #515151; font-size: 13px; margin-bottom: 12px; }
-*/
 
 .linkpages {
 	clear: both;

@@ -37,9 +37,9 @@ function the_tagology_brand() { ?>
 <?php }
 
 /*
- * is savory in multi-user mode?
+ * in multi-user mode?
  */
-function is_savory_multi_user() {
+function is_tagology_multi_user() {
   global $tagology_plugin;
   $options = $tagology_plugin->get_options();
   return ($options['is_multiuser']);
@@ -108,9 +108,9 @@ function savory_your_bookmarks_link() {
 }
 
 /*
- * facebook share - template tag
+ * echo a link to share with facebook
  */
-function savory_facebook_share_link($bookmark = false) {
+function the_tagology_facebook_share_link($bookmark = false) {
   // http://www.facebook.com/sharer.php?u=<url to share>&t=<title of content>
   global $tagology_plugin;
   
@@ -120,7 +120,22 @@ function savory_facebook_share_link($bookmark = false) {
   }
   
   $url = get_post_meta($bookmark->ID, '_SAVORY_URL', true);
-  printf( '<a href="http://www.facebook.com/sharer.php?u=%s">Facebook</a>', esc_attr( $url) ); 
+  $url = tagology_mod_url ($url);
+  $url = sprintf ('http://www.facebook.com/sharer.php?u=%s', urlencode ($url) );
+  $url = sprintf ('<a href="%s">Facebook</a>', esc_attr( $url) );
+  echo $url;
+}
+
+function tagology_mod_url ($url) {
+  
+  # twitter list urls don't share correctly with the facebook share bookmarklet
+  # at http://www.facebook.com/share_options.php
+  # e.g. http://twitter.com/#!/nprnews/egypt2011
+  if (preg_match('|(https?://twitter.com)/#!/([^/]+/.+)/?|', $url, $matches)) 
+    $url = $matches[1] . '/' . $matches[2];
+  
+  // fallback
+  return $url;
 }
 
 /*
