@@ -21,7 +21,7 @@
 		get_author_posts_url( $authordata->ID, $authordata->user_nicename ),
 		esc_attr( sprintf( __( 'Posts by %s' ), get_the_author() ) )
 	);
-  echo $link . get_avatar( $post->ID, $size = '16') . '</a>';
+  echo $link . get_avatar( $post->post_author, $size = '16') . '</a>';
 ?>
 </span></li>
 <?php endif; ?>
