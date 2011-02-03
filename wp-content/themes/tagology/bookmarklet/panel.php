@@ -83,7 +83,7 @@ $action_logout = get_bloginfo('url') . '/bookmarklet/logout/';
     <input type="submit" value="<?php the_bookmarket_text(); ?>"/>
 <?php if ($bookmark) : ?>
   or <?php savory_tweet_link($bookmark); ?>
-  &nbsp;|&nbsp;<?php savory_facebook_share_link($bookmark); ?>
+  &nbsp;|&nbsp;<?php the_tagology_facebook_share_link($bookmark); ?>
   &nbsp;|&nbsp;<?php savory_your_bookmarks_link(); ?>
   &nbsp;|&nbsp;<a href="<?php echo wp_logout_url($action_logout); ?>" title="Logout">Logout</a>
 <?php else: ?>
