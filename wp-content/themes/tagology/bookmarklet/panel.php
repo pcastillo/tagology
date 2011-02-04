@@ -82,12 +82,12 @@ $action_logout = get_bloginfo('url') . '/bookmarklet/logout/';
     <input type="hidden" name="title" value="<?php echo esc_attr($title); ?>"/>
     <input type="submit" value="<?php the_bookmarket_text(); ?>"/>
 <?php if ($bookmark) : ?>
-  or <?php savory_tweet_link($bookmark); ?>
+  or <?php the_tagology_tweet_link($bookmark); ?>
   &nbsp;|&nbsp;<?php the_tagology_facebook_share_link($bookmark); ?>
-  &nbsp;|&nbsp;<?php savory_your_bookmarks_link(); ?>
+  &nbsp;|&nbsp;<?php the_user_bookmarks_link(); ?>
   &nbsp;|&nbsp;<a href="<?php echo wp_logout_url($action_logout); ?>" title="Logout">Logout</a>
 <?php else: ?>
-  or <?php savory_your_bookmarks_link(); ?>
+  or <?php the_user_bookmarks_link(); ?>
   &nbsp;|&nbsp;<a href="<?php echo wp_logout_url($action_logout); ?>" title="Logout">Logout</a>
 <?php endif; ?>
   </form>

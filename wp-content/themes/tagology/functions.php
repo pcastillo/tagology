@@ -10,8 +10,12 @@ if(!defined('WP_THEME_URL'))
  * echo the tagology path - used in the loop
  */
 function the_tagology_path() {
-  global $post;  
-  $url = get_post_meta($post->ID, '_SAVORY_URL', true);
+  global $tagology_plugin;  
+  
+  $url = $tagology_plugin->get_bookmark_url();
+  if (!$url)
+    return;
+    
   $parts = parse_url($url);
   if (false !== $parts) {
     $path = @$parts['path'];
@@ -55,8 +59,8 @@ function tagology_show_sidebar() {
 /*
  * the_date filter
  */
-add_filter('the_date', 'savory_the_date_filter', 15, 4);
-function savory_the_date_filter($the_date, $d, $before, $after) {
+add_filter('the_date', 'tagology_the_date_filter', 15, 4);
+function tagology_the_date_filter($the_date, $d, $before, $after) {
   global $tagology_plugin;
   $arc_year = get_the_time('Y');
   $arc_month = get_the_time('m');
@@ -67,13 +71,12 @@ function savory_the_date_filter($the_date, $d, $before, $after) {
 /*
  * tag title
  */
-function savory_tag_title($prefix = '', $display = true ) {
+function tagology_tag_title($prefix = '', $display = true ) {
 	global $wp_query;
 	if ( !is_tag() )
 		return;
 
   $tags = $wp_query->query_vars['tag_slug__and'];
-
 	if ( ! $tags )
 		return;
   
@@ -88,9 +91,9 @@ function savory_tag_title($prefix = '', $display = true ) {
 }
 
 /*
- * your bookmarks links
+ * echo the link for the logged-in user's bookmarks
  */
-function savory_your_bookmarks_link() {
+function the_user_bookmarks_link() {
   
   if (!is_user_logged_in())
     return false;
@@ -114,12 +117,12 @@ function the_tagology_facebook_share_link($bookmark = false) {
   // http://www.facebook.com/sharer.php?u=<url to share>&t=<title of content>
   global $tagology_plugin;
   
-  if (!$bookmark) {
-    global $post;
-    $bookmark = $post;
-  }
+  // get bookmark URL
+  $url = $tagology_plugin->get_bookmark_url($bookmark);
+  if (!$url)
+    return;
   
-  $url = get_post_meta($bookmark->ID, '_SAVORY_URL', true);
+  // create facebook share link
   $url = tagology_mod_url ($url);
   $url = sprintf ('http://www.facebook.com/sharer.php?u=%s', urlencode ($url) );
   $url = sprintf ('<a href="%s">Facebook</a>', esc_attr( $url) );
@@ -141,29 +144,23 @@ function tagology_mod_url ($url) {
 /*
  * add to google reader link - template tag
  */
-function savory_add_to_google_link($bookmark = false) {
+function tagology_add_to_google_link($bookmark = false) {
   global $tagology_plugin;
-  
-  if (!$bookmark) {
-    global $post;
-    $bookmark = $post;
-  }
-  
-  $url = get_post_meta($bookmark->ID, '_SAVORY_URL', true);
-  printf( '<a href="http://www.google.com/ig/addtoreader?et=gEs490VY&source=ign_pLt&feedurl=%s">+reader</a>', esc_attr( $url) ); 
+    
+  $url = $tagology_plugin->get_bookmark_url($bookmark);
+  if ($url)
+    printf( '<a href="http://www.google.com/ig/addtoreader?et=gEs490VY&source=ign_pLt&feedurl=%s">+reader</a>', esc_attr( $url) ); 
 }
 
 /*
- * tweet link - template tag
+ * echo the twitter share link for a bookmark
  */
-function savory_tweet_link($bookmark = false) {
-  global $tagology_plugin;
-  
+function the_tagology_tweet_link($bookmark = false) {
+  global $tagology_plugin;  
   if (!$bookmark) {
     global $post;
     $bookmark = $post;
   }
-  
   $msg = $tagology_plugin->get_short_message($bookmark);
   printf( '<a target="twitter" href="http://twitter.com/?status=%s">tweet</a>', rawurlencode($msg) );
 }
@@ -192,9 +189,9 @@ function the_bookmarket_text() {
 /*
  * template tag - echo the URL for the current link (loop)
  */
-function the_savory_link() {
-  global $post;
-  echo get_post_meta($post->ID, '_SAVORY_URL', true);
+function the_tagology_link() {
+  global $tagology_plugin;
+  echo $tagology_plugin->get_bookmark_url();
 }
 
 /*
@@ -218,7 +215,7 @@ function the_popular_tags($before = "<ul class='recenttags'><li>", $between = "<
   // each tag
   $tags = $tagology_plugin->get_popular_tags();
   if (0 < count($tags)) {     
-    $tag_a = array_map('savory_tag_html', $tags );
+    $tag_a = array_map('tagology_tag_html', $tags );
     echo implode($between, $tag_a); 
   }
   
@@ -237,14 +234,14 @@ function the_recent_tags($before = "<ul class='recenttags'><li>", $between = "</
   
   // each tag
   $tags = $tagology_plugin->get_recent_tags();     
-  $tag_a = array_map('savory_tag_html', $tags );
+  $tag_a = array_map('tagology_tag_html', $tags );
   echo implode($between, $tag_a);    
   
   // after
   echo $after;    
 }
 
-function savory_tag_html($x) {
+function tagology_tag_html($x) {
   return sprintf("<a href=\"" . get_tag_link( $x->term_id) . "\">%s</a>", $x->name);
 }
   
@@ -252,10 +249,13 @@ function savory_tag_html($x) {
  * echo the host name of the bookmark - used in the loop
  */
 function the_tagology_source() {
-  global $post;  
-  $url = get_post_meta($post->ID, '_SAVORY_URL', true);
-  $host = parse_url($url, PHP_URL_HOST);
-  echo $host;
+  global $tagology_plugin;
+  
+  $url = $tagology_plugin->get_bookmark_url();
+  if ($url) {
+    $host = parse_url($url, PHP_URL_HOST);
+    echo $host;
+  }
 }
 
 /*
@@ -276,8 +276,8 @@ function tagology_short_text($text, $length, $after = '') {
 if ( !is_admin() ) {
   
   // scripts
-  wp_register_script( 'savory-script' , WP_THEME_URL . '/savory.js', array( 'jquery' ) );
-  wp_enqueue_script( 'savory-script' );
+  wp_register_script( 'tagology-script' , WP_THEME_URL . '/tagology.js', array( 'jquery' ) );
+  wp_enqueue_script( 'tagology-script' );
   
   // styles
   wp_register_style( 'blueprint', WP_THEME_URL . '/blueprint_1.0.css' );
@@ -293,7 +293,6 @@ if ( !is_admin() ) {
   add_filter( 'user_can_richedit', create_function( '$a', 'return false;' ));
 
   // modify head actions
-  //
   remove_action( 'wp_head', 'feed_links_extra', 3 );
   remove_action( 'wp_head', 'feed_links', 2 );
   remove_action( 'wp_head', 'rsd_link');
@@ -308,6 +307,5 @@ if ( !is_admin() ) {
 
   // remove filters
   add_filter('login_errors', create_function('$a', "return null;"));
-  
 }
 ?>

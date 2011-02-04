@@ -32,9 +32,9 @@ if ($tagology_plugin->insert_bookmark($hash, $url, $desc, $taglist, $time)) {
  echo "&nbsp;Success!";
  $bookmark = $this->bookmark_exists($url);
 ?>
-&nbsp;|&nbsp;<?php savory_tweet_link($bookmark); ?>
+&nbsp;|&nbsp;<?php the_tagology_tweet_link($bookmark); ?>
 &nbsp;|&nbsp;<?php the_tagology_facebook_share_link($bookmark); ?>
-&nbsp;|&nbsp;<?php savory_your_bookmarks_link(); ?>
+&nbsp;|&nbsp;<?php the_user_bookmarks_link(); ?>
 
 <?php
 }

@@ -1,9 +1,11 @@
 <?php
 
-define ('SAVORY_POST_TYPE', 'savorypost');
-define ('SAVORY_QUERY_VAR', 'svry');
-define ('SAVORY_METAKEY_HASH', '_SAVORY_HASH');
-define ('SAVORY_METAKEY_URL', '_SAVORY_URL');
+define ('TAGOLOGY_POST_TYPE', 'savorypost');
+define ('TAGOLOGY_QUERY_VAR', 'svry');
+define ('TAGOLOGY_LIVESEARCH_VAR', 'q');
+define ('TAGOLOG_METAKEY_HASH', '_SAVORY_HASH');
+define ('TAGOLOGY_METAKEY_URL', '_SAVORY_URL');
+define ('TAGOLOGY_POST_TYPE_SLUG', 'url');
 
 // BEGIN auto-generated code
 
@@ -11,7 +13,7 @@ define ('SAVORY_METAKEY_URL', '_SAVORY_URL');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.1052
+Version: 0.1.1090
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -33,7 +35,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.1052';
+	public $plugin_version = '0.1.1090';
 	/*
 	* constructor
 	*/
@@ -192,13 +194,15 @@ class WpTagologyPlugin {
     add_filter('term_links-post_tag', array( &$this, 'term_links_post_tag_filter') );
     add_filter('query_vars', array(&$this, 'query_vars_filter'));	
 		add_action('template_redirect', array(&$this, 'template_redirect_action'), 9 /* before canonical */);
+    add_action('tagology_embeds', array(&$this, 'tagology_embeds_action')); 
   }	
   
 	/*
 	* query vars filter
 	*/
 	function query_vars_filter($qvars) {
-		$qvars[] = SAVORY_QUERY_VAR;
+		$qvars[] = TAGOLOGY_QUERY_VAR;
+    $qvars[] = TAGOLOGY_LIVESEARCH_VAR;
     $qvars[] = 'url';
     $qvars[] = 'title';
     $qvars[] = 'tags';
@@ -224,16 +228,20 @@ class WpTagologyPlugin {
     $new_rules['date/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/page/?([0-9]{1,})/?$'] = 'index.php?post_type=savorypost&year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&paged=$matches[4]'; 
     $new_rules['date/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/?$'] = 'index.php?post_type=savorypost&year=$matches[1]&monthnum=$matches[2]&day=$matches[3]';
     // single links
-    $new_rules['savory/([^/]+)(/[0-9]+)?/?$'] = 'index.php?savorypost=$matches[1]&page=$matches[2]';
+    //$new_rules['url/([^/]+)(/[0-9]+)?/?$'] = 'index.php?post_type=savorypost&savorypost=$matches[1]&page=$matches[2]';
+    $new_rules['url/([^/]+)/?$'] = 'index.php?post_type=savorypost&savorypost=$matches[1]';
     // author 
     $new_rules['author/([^/]+)/page/?([0-9]{1,})/?$'] = 'index.php?post_type=savorypost&author_name=$matches[1]&paged=$matches[2]';
     $new_rules['author/([^/]+)/?$'] = 'index.php?post_type=savorypost&author_name=$matches[1]';    
     // bookmarklet javascript
-    $new_rules['bookmarklet/([a-z]+)/?$'] = 'index.php?'.SAVORY_QUERY_VAR.'=bookmarklet/$matches[1]';
+    $new_rules['bookmarklet/([a-z]+)/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=bookmarklet/$matches[1]';
     // short link
     // e.g. http://example.com/s1234
-    $new_rules['s([0-9]+)/?$'] = 'index.php?'.SAVORY_QUERY_VAR.'=shortlink&p=$matches[1]';
-    $new_rules['s/([0-9]+)/?$'] = 'index.php?'.SAVORY_QUERY_VAR.'=shortlink&p=$matches[1]'; // deprecated
+    $new_rules['s([0-9]+)/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=shortlink&p=$matches[1]';
+    $new_rules['s/([0-9]+)/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=shortlink&p=$matches[1]'; // deprecated
+    
+    // live search
+    $new_rules['livesearch/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=livesearch'; // deprecated
     
     // return new rules
 		return $new_rules;
@@ -244,7 +252,7 @@ class WpTagologyPlugin {
 	*/
 	function template_redirect_action() {
     
-		switch (get_query_var(SAVORY_QUERY_VAR)) {
+		switch (get_query_var(TAGOLOGY_QUERY_VAR)) {
 			case 'bookmarklet/js' :
 				$this->bookmarklet_redirect('bookmarklet/bookmarklet.js', true);
 				break;
@@ -260,11 +268,76 @@ class WpTagologyPlugin {
       case 'shortlink': 
         $this->shortlink_redirect();
         break;      
+      case 'livesearch':
+        $this->livesearch_redirect();
+        break;
       //default:
       //  wp_die("Not Found.");
       //  break;
 		}
 	}
+  
+  /*
+   * live search redirect
+   */
+  function livesearch_redirect() {
+    global $wpdb;
+    
+    $results = array();
+    $k = get_query_var(TAGOLOGY_LIVESEARCH_VAR);
+    if (3 <= strlen($k)) {
+    
+      $querystr = $wpdb->prepare("
+        SELECT wposts.*, wpostmeta.meta_value as bookmark_url
+        FROM $wpdb->posts wposts, $wpdb->postmeta wpostmeta
+        WHERE wposts.ID = wpostmeta.post_id 
+        AND wpostmeta.meta_key = '%s' 
+        AND wposts.post_title LIKE '%%%s%%' 
+        AND wposts.post_status = 'publish' 
+        AND wposts.post_type = '%s' 
+        ORDER BY wposts.post_date DESC LIMIT 0, 10
+      ", TAGOLOGY_METAKEY_URL, $k, TAGOLOGY_POST_TYPE );
+      
+      // $results['sql'] = $querystr; # DEBUG
+      
+      /*
+      $querystr = $wpdb->prepare("
+        SELECT wposts.* 
+        FROM $wpdb->posts wposts, $wpdb->postmeta wpostmeta
+        WHERE wposts.ID = wpostmeta.post_id 
+        AND wpostmeta.meta_key = '%s' 
+        AND wpostmeta.meta_value LIKE '%%%s%%' 
+        AND wposts.post_status = 'publish' 
+        AND wposts.post_type = '%s' 
+        ORDER BY wposts.post_date DESC
+      ", TAGOLOGY_METAKEY_URL, $k, TAGOLOGY_POST_TYPE );
+      */
+      
+      $posts = $wpdb->get_results($querystr);
+      
+      $out = array_map( 
+        function($post) { 
+          return array(
+            'title'=>$post->post_title,
+            'bookmark'=>$post->bookmark_url,
+            'link'=>get_post_permalink($post->ID),
+          );
+        }, 
+        $posts 
+      ); 
+      $results['bookmarks'] = $out;      
+    }
+    
+    echo json_encode($results);
+    die();
+  }
+  
+  /*
+   * tagology_embeds_action
+   */
+  function tagology_embeds_action($bookmark = null) {
+    // TODO    
+  }
   
   /*
    * custom get_day_link function
@@ -302,11 +375,11 @@ class WpTagologyPlugin {
     if (0 < (int)$p) {
       $posts = get_posts(array(
         'p' => $p,
-        'post_type' => SAVORY_POST_TYPE,
+        'post_type' => TAGOLOGY_POST_TYPE,
       ));
       //print_r($posts);
       if ($posts) {
-        $url = get_post_meta($posts[0]->ID, SAVORY_METAKEY_URL, true);
+        $url = get_post_meta($posts[0]->ID, TAGOLOGY_METAKEY_URL, true);
         //print "URL = $url\n";
         if (!empty($url)) {
           //echo "$url";
@@ -391,19 +464,28 @@ class WpTagologyPlugin {
     }
       
     if (isset($_FILES['import_bookmark_file']))
-      $this->upload_bookmarks($_FILES['import_bookmark_file']);
-    
+      $this->upload_bookmarks($_FILES['import_bookmark_file']);    
   }
   
   /*
    * get the favicon ING tag
    */
   function get_the_favicon_url() {
-    global $post;  
-    $url = get_post_meta($post->ID, '_SAVORY_URL', true);
+    $url = $this->get_bookmark_url();
     $host = parse_url($url, PHP_URL_HOST);
     return $host;
   }  
+  
+  /*
+  * get post's bookmark URL
+  */
+  function get_bookmark_url($bookmark = null) {
+    if (!$bookmark) {
+      global $post;  
+      $bookmark = $post;
+    }
+    return get_post_meta($bookmark->ID, TAGOLOGY_METAKEY_URL, true);   
+  }
   
   /*
    * get recent distinct tags
@@ -508,7 +590,7 @@ class WpTagologyPlugin {
   function delete_bookmarks() {
 
     $myposts = get_posts(array(
-      'post_type' => SAVORY_POST_TYPE,
+      'post_type' => TAGOLOGY_POST_TYPE,
       'numberposts' => -1,
     ));
     
@@ -531,8 +613,8 @@ class WpTagologyPlugin {
     
     // check for existence
     $myposts = get_posts(array(
-      'post_type' => SAVORY_POST_TYPE,
-      'meta_key' => SAVORY_METAKEY_HASH,
+      'post_type' => TAGOLOGY_POST_TYPE,
+      'meta_key' => TAGOLOG_METAKEY_HASH,
       'meta_value' => $hash,
     ));
     
@@ -606,8 +688,8 @@ class WpTagologyPlugin {
     
     // check for existence
     $myposts = get_posts(array(
-      'post_type' => SAVORY_POST_TYPE,
-      'meta_key' => SAVORY_METAKEY_HASH,
+      'post_type' => TAGOLOGY_POST_TYPE,
+      'meta_key' => TAGOLOG_METAKEY_HASH,
       'meta_value' => $hash,
     ));
     
@@ -631,7 +713,7 @@ class WpTagologyPlugin {
      'post_content' => '',
      'post_status' => 'publish',
      'post_author' => 1,
-     'post_type' => SAVORY_POST_TYPE,
+     'post_type' => TAGOLOGY_POST_TYPE,
      'post_date_gmt' => date( 'Y-m-d H:i:s GMT', strtotime($time) ),
      'post_date' => date( 'Y-m-d H:i:s', strtotime($time) ),
     );
@@ -643,8 +725,8 @@ class WpTagologyPlugin {
       return $false; // ERROR
     
     // add metadata
-    update_post_meta($id, SAVORY_METAKEY_HASH, $hash);    
-    update_post_meta($id, SAVORY_METAKEY_URL, $href);       
+    update_post_meta($id, TAGOLOG_METAKEY_HASH, $hash);    
+    update_post_meta($id, TAGOLOGY_METAKEY_URL, $href);       
     
     // add tags, split on SPACE
     $tags = explode(' ', $taglist);
@@ -703,7 +785,7 @@ class WpTagologyPlugin {
    * custom post type for templates
    */
 	function register_custom_post_type() {		    
-		register_post_type( SAVORY_POST_TYPE,
+		register_post_type( TAGOLOGY_POST_TYPE,
 			array(
 				'labels' => array(
 					'name' => __( 'Bookmarks' ),
@@ -725,7 +807,7 @@ class WpTagologyPlugin {
         'show_ui' => true,
         'publicly_queryable' => true,
         'exclude_from_search' => false,
-        'rewrite' => array( 'slug' => 'savory', 'with_front' => false ),        
+        'rewrite' => array( 'slug' => TAGOLOGY_POST_TYPE_SLUG, 'with_front' => false ),        
 				'menu_position' => 20,
 				'supports' => array( 'title', 'editor', 'custom-fields' ),
 			)

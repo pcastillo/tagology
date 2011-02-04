@@ -4,7 +4,7 @@
 elseif (is_single() ) { single_post_title(); echo ' - ' ; bloginfo('name'); }
 elseif (is_page() ) { single_post_title(); echo ' - ' ; bloginfo('name'); }	
 elseif (is_category() ) { echo ucwords(single_cat_title('',false)); echo ' Category - ' ; bloginfo('name'); }
-elseif (is_tag() ) { echo "Tagged with "; echo ucwords(savory_tag_title('',false)); echo " - " ; bloginfo('name'); }
+elseif (is_tag() ) { echo "Tagged with "; echo ucwords(tagology_tag_title('',false)); echo " - " ; bloginfo('name'); }
 elseif (is_day() || is_month() || is_year() ) { echo 'Archives:'; wp_title(''); }	
 else { wp_title('',true); } ?></title>
 <link href='http://fonts.googleapis.com/css?family=Cabin:bold' rel='stylesheet' type='text/css'>

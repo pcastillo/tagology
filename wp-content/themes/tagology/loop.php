@@ -3,17 +3,18 @@
 </div>
 <div <?php post_class(); ?> id="post-<?php the_ID(); ?>">
 <div class="title">
-<a rel="external nofollow" name="post-<?php the_ID(); ?>" href="<?php the_savory_link(); ?>"><?php the_title(); ?></a>
+<a rel="external nofollow" name="post-<?php the_ID(); ?>" href="<?php the_tagology_link(); ?>"><?php the_title(); ?></a>
 <span class="path"><?php the_tagology_path(); ?></span>
 </div>
 <div class="source">
 <!--&#x25B9;--><?php the_favicon(); ?><?php the_tagology_source(); ?><span class="tools"> <?php edit_post_link( 'edit', ' | ', ''); ?>
-&nbsp;|&nbsp;<?php savory_tweet_link(); ?>
+&nbsp;|&nbsp;<?php the_tagology_tweet_link(); ?>
 &nbsp;|&nbsp;<?php the_tagology_facebook_share_link(); ?>
 </span></div>
 <ul class="tags">
-<li><span class="author">
+<?php the_tags( '<li>','</li><li>','</li>' ); ?>
 <?php if (is_tagology_multi_user()) : ?>
+<li><span class="author">
 <?php
  	global $authordata;
 	$link = sprintf(
@@ -25,7 +26,8 @@
 ?>
 </span></li>
 <?php endif; ?>
-<?php the_tags( '<li>','</li><li>','</li>' ); ?></ul>
+</ul>
 <div class="clearfix"></div>
+<?php do_action('tagology_embeds'); ?>
 </div>
 

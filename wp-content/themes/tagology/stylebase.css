@@ -125,6 +125,7 @@ A.post-edit-link {
   border: 1px solid white;
   padding: 0;
   margin: 0;
+  float: right;
 }
 
 .tags .author A:hover {
