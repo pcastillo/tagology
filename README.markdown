@@ -8,12 +8,12 @@ Have a look at the DEMO at [http://b.cuppster.com](http://b.cuppster.com)
 Features
 ------------
 
-Import your existing bookmarks from your Delicious account
-Bookmarklet link to easily and quickly add or edit a bookmark
-Twitter and Facebook integration including hashtags and link shortening
-Search as you type for faster results
-Displays favicons to quickly identify sites
-Recent and Popular Tag support
+* Import your existing bookmarks from your Delicious account
+* Bookmarklet link to easily and quickly add or edit a bookmark
+* Twitter and Facebook integration including hashtags and link shortening
+* Search as you type for faster results
+* Displays favicons to quickly identify sites
+* Recent and Popular Tag support
 
 Download
 ----------
