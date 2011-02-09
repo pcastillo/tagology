@@ -42,7 +42,7 @@ function the_tagology_path() {
  * echo the brand
  */
 function the_tagology_brand() { ?>
-<span class="pwrdby">Powered by <span class="tag">TAG</span><span class="ology">ology</span></span>
+<span class="pwrdby"><a href="http://tagology.com">Powered by <span class="tag">TAG</span><span class="ology">ology</span></a></span>
 <?php }
 
 /*

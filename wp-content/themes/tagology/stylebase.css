@@ -850,6 +850,12 @@ textarea { width: auto; height: auto; border: 1px solid #aaa; }
 	padding: 0;
 }
 
+/* BRANDING */
+
+.pwrdby A, .pwrdby A:hover {
+  text-decoration: none !important;
+}
+
 /* COMMON PLUGINS */
 
 .wp-paginate .current { background: #547980 !important; font-weight: bold; }

@@ -13,7 +13,7 @@ define ('TAGOLOGY_POST_TYPE_SLUG', 'url');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.1230
+Version: 0.1.1234
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -35,7 +35,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.1230';
+	public $plugin_version = '0.1.1234';
 	/*
 	* constructor
 	*/
