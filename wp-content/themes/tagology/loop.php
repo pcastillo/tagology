@@ -7,9 +7,12 @@
 <span class="path"><?php the_tagology_path(); ?></span>
 </div>
 <div class="source">
-<!--&#x25B9;--><?php the_favicon(); ?><?php the_tagology_source(); ?><span class="tools"> <?php edit_post_link( 'edit', ' | ', ''); ?>
-&nbsp;|&nbsp;<?php the_tagology_tweet_link(); ?>
-&nbsp;|&nbsp;<?php the_tagology_facebook_share_link(); ?>
+<!--&#x25B9;--><?php the_favicon(); ?><?php the_tagology_source(); ?>
+<span class="bar">|</span><?php comments_popup_link('discuss', '1 comment', 
+'% comments', 'comments-link', ''); ?>
+<span class="tools"> <?php edit_post_link( 'edit', '<span class="bar">|</span>', ''); ?>
+<span class="bar">|</span><?php the_tagology_tweet_link(); ?>
+<span class="bar">|</span><?php the_tagology_facebook_share_link(); ?>
 </span></div>
 <ul class="tags">
 <?php the_tags( '<li>','</li><li>','</li>' ); ?>

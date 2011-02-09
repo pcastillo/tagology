@@ -6,6 +6,11 @@ require_once( TEMPLATEPATH . '/plugin.tagology.php' );
 if(!defined('WP_THEME_URL'))
   define( 'WP_THEME_URL', get_stylesheet_directory_uri() );
 
+
+// filters
+
+add_filter( 'cancel_comment_reply_link', function( $html ) { return ''; } );
+
 /*
  * echo the tagology path - used in the loop
  */
@@ -37,7 +42,7 @@ function the_tagology_path() {
  * echo the brand
  */
 function the_tagology_brand() { ?>
-<span id="pwrdby">Powered by <span class="tag">TAG</span><span class="ology">ology</span></span>
+<span class="pwrdby">Powered by <span class="tag">TAG</span><span class="ology">ology</span></span>
 <?php }
 
 /*
@@ -308,4 +313,110 @@ if ( !is_admin() ) {
   // remove filters
   add_filter('login_errors', create_function('$a', "return null;"));
 }
+
+/*
+ * tagology comment
+ */
+function tagology_comment( $comment, $args, $depth ) {
+	$GLOBALS['comment'] = $comment;
+	switch ( $comment->comment_type ) :
+		case '' :
+	?>
+<li <?php comment_class(); ?> id="li-comment-<?php comment_ID(); ?>">
+  <div id="comment-<?php comment_ID(); ?>">
+		<div class="comment-author vcard">
+			<?php echo get_avatar( $comment, 16 ); ?>
+			<?php printf( __( '%s', 'tagology' ), sprintf( '<cite class="fn">%s</cite>', get_comment_author_link() ) ); ?>
+		</div><!-- .comment-author .vcard -->
+		<?php if ( $comment->comment_approved == '0' ) : ?>
+			<em><?php _e( 'Your comment is awaiting moderation.', 'tagology' ); ?></em>
+			<br />
+		<?php endif; ?>
+		<div class="comment-meta commentmetadata"><span class="bar">|</span><?php
+        printf( '%s' , tagology_get_time_diff_string(get_comment_time('U'), time()));
+      ?><span class="bar">|</span><a href="<?php echo esc_url( get_comment_link( $comment->comment_ID ) ); ?>">link</a>
+      <span class="bar">|</span><span class="reply"><?php comment_reply_link( array_merge( $args, array( 'depth' => $depth, 'max_depth' => $args['max_depth'] ) ) ); ?></span>
+    </div><!-- .comment-meta .commentmetadata -->
+		<div class="comment-body"><?php comment_text(); ?></div>
+	
+	</div><!-- #comment-##  -->
+
+	<?php
+			break;
+		case 'pingback'  :
+		case 'trackback' :
+	?>
+	<li class="post pingback">
+		<p><?php _e( 'Pingback:', 'twentyten' ); ?> <?php comment_author_link(); ?><?php edit_comment_link( __('(Edit)', 'twentyten'), ' ' ); ?></p>
+	<?php
+			break;
+	endswitch;
+}
+
+/*
+ * echo a login form
+ */
+function tagology_login_form($args = array()) {
+  // see: http://www.wprecipes.com/add-a-login-form-on-your-wordpress-theme
+  $defaults = array( 'recover' => 'forgot?', 'submit' => 'Login' );
+	$args = wp_parse_args( $args, $defaults );  
+?>
+<?php if (!(current_user_can('level_0'))){ get_currentuserinfo(); if (empty($user_login)) { $user_login = ''; } ?>
+<form id="loginform" action="<?php echo get_option('home'); ?>/wp-login.php" method="post">
+<label for="log">username</label> <input type="text" name="log" id="log" value="<?php echo esc_html(stripslashes($user_login), 1) ?>" size="20" />
+<label for="pwd">password</label> <input type="password" name="pwd" id="pwd" size="20" />
+<input type="submit" name="submit" value="<?php echo $args['submit']; ?>" class="button" />
+<a href="<?php echo get_option('home'); ?>/wp-login.php?action=lostpassword"><?php echo $args['recover']; ?></a>
+<input type="hidden" name="redirect_to" value="<?php echo $_SERVER['REQUEST_URI']; ?>" />
+</form>
+<?php }
+}
+
+/*
+ * time helper functions
+ */
+function tagology_get_time_difference( $start, $end )
+{
+  $uts['start']      =    $start ;
+  $uts['end']        =    $end ;
+  if( $uts['start']!==-1 && $uts['end']!==-1 )
+  {
+    if( $uts['end'] >= $uts['start'] )
+    {
+      $diff = $uts['end'] - $uts['start'];
+      if( $days=intval((floor($diff/86400))) )
+        $diff = $diff % 86400;
+      if( $hours=intval((floor($diff/3600))) )
+        $diff = $diff % 3600;
+      if( $minutes=intval((floor($diff/60))) )
+        $diff = $diff % 60;
+      $diff    =    intval( $diff );            
+      return( array('days'=>$days, 'hours'=>$hours, 'minutes'=>$minutes, 'seconds'=>$diff) );
+    }
+    else
+    {
+      trigger_error( "Ending date/time is earlier than the start date/time", E_USER_WARNING );
+    }
+  }
+  else
+  {
+    trigger_error( "Invalid date/time data detected", E_USER_WARNING );
+  }
+  return( false );
+}
+
+function tagology_get_time_diff_string( $start, $end ) {
+	$diff = tagology_get_time_difference( $start, $end );
+	$timeclass = "";
+	if (0 < $diff['days'])
+		$dt = sprintf ( '%d days, %d hours ago', $diff['days'], $diff['hours'] );
+	elseif (0 < $diff['hours'] )
+		$dt = sprintf ( '%d hours, %d min. ago', $diff['hours'], $diff['minutes'] );
+	elseif (0 == $diff['minutes'])
+		$dt = 'less than a minute ago';
+	else
+		$dt = sprintf ( '%d min. ago', $diff['minutes'] );
+  return $dt;
+}
+
 ?>

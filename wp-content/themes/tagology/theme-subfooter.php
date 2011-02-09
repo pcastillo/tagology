@@ -1,5 +1,5 @@
 Copyright &copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>
-&nbsp;|&nbsp;
+<span class="bar">|</span>
 <?php the_tagology_brand(); ?>
 <br/>
 Share on this site: drag this <a class="bookmarklet" href="<?php the_bookmarklet_link(); ?>"><?php the_bookmarket_text(); ?></a> bookmarklet to your toolbar.

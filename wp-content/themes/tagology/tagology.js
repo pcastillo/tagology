@@ -4,6 +4,13 @@
  */
 jQuery(document).ready(function($)
 {
+  
+  $('#loginlink').click(function(e) {    
+    e.preventDefault();
+    $('#loginlink').hide();
+    $('#loginformwrapper').fadeIn(500);
+  });
+  
   $('.savorypost').hover(
     function() {
       $(this).find('.tools').fadeIn(500);     

@@ -13,7 +13,7 @@ define ('TAGOLOGY_POST_TYPE_SLUG', 'url');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.1090
+Version: 0.1.1230
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -35,7 +35,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.1090';
+	public $plugin_version = '0.1.1230';
 	/*
 	* constructor
 	*/
@@ -206,6 +206,7 @@ class WpTagologyPlugin {
     $qvars[] = 'url';
     $qvars[] = 'title';
     $qvars[] = 'tags';
+    $qvars[] = 'site';
 		return $qvars;
 	}
 
@@ -213,30 +214,38 @@ class WpTagologyPlugin {
    * url_rewrite_filter
    */
   function url_rewrite_filter($rules) {
+    
+    // build from scratch
 		$new_rules = array();
     
+    // bookmarks lists
+    //
+    
     // front page
-		$new_rules['/?$'] = 'index.php?post_type=savorypost';
+		$new_rules['/?$'] = sprintf( 'index.php?post_type=%s', TAGOLOGY_POST_TYPE );
     // paged
-		$new_rules['page/([0-9]{1,})/?$'] = 'index.php?post_type=savorypost&paged=$matches[1]';
+		$new_rules['page/([0-9]{1,})/?$'] = sprintf( 'index.php?paged=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE );
     // single tag
-		$new_rules['tag/([^/]+)/?$'] = 'index.php?post_type=savorypost&tag=$matches[1]';
+		$new_rules['tag/([^/]+)/?$'] = sprintf( 'index.php?tag=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE );
     // paged tag
-		$new_rules['tag/([^/]+)/([0-9]{1,})/?$'] = 'index.php?post_type=savorypost&tag=$matches[1]&paged=$matches[2]';    
-    $new_rules['tag/([^/]+)/page/([0-9]{1,})/?$'] = 'index.php?post_type=savorypost&tag=$matches[1]&paged=$matches[2]';   
+		$new_rules['tag/([^/]+)/([0-9]{1,})/?$'] = sprintf( 'index.php?tag=$matches[1]&paged=$matches[2]&post_type=%s', TAGOLOGY_POST_TYPE ); 
+    $new_rules['tag/([^/]+)/page/([0-9]{1,})/?$'] = sprintf( 'index.php?tag=$matches[1]&paged=$matches[2]&post_type=%s', TAGOLOGY_POST_TYPE );   
     // date archives
-    $new_rules['date/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/page/?([0-9]{1,})/?$'] = 'index.php?post_type=savorypost&year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&paged=$matches[4]'; 
-    $new_rules['date/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/?$'] = 'index.php?post_type=savorypost&year=$matches[1]&monthnum=$matches[2]&day=$matches[3]';
+    $new_rules['date/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/page/?([0-9]{1,})/?$'] = sprintf( 'index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&paged=$matches[4]&post_type=%s', TAGOLOGY_POST_TYPE ); 
+    $new_rules['date/([0-9]{4})/([0-9]{1,2})/([0-9]{1,2})/?$'] = sprintf( 'index.php?year=$matches[1]&monthnum=$matches[2]&day=$matches[3]&post_type=%s', TAGOLOGY_POST_TYPE ); 
     // single links
     //$new_rules['url/([^/]+)(/[0-9]+)?/?$'] = 'index.php?post_type=savorypost&savorypost=$matches[1]&page=$matches[2]';
-    $new_rules['url/([^/]+)/?$'] = 'index.php?post_type=savorypost&savorypost=$matches[1]';
+    $new_rules['url/([^/]+)/?$'] = sprintf( 'index.php?%s=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE, TAGOLOGY_POST_TYPE );
     // author 
-    $new_rules['author/([^/]+)/page/?([0-9]{1,})/?$'] = 'index.php?post_type=savorypost&author_name=$matches[1]&paged=$matches[2]';
-    $new_rules['author/([^/]+)/?$'] = 'index.php?post_type=savorypost&author_name=$matches[1]';    
+    $new_rules['author/([^/]+)/page/?([0-9]{1,})/?$'] = sprintf( 'index.php?author_name=$matches[1]&paged=$matches[2]&post_type=%s', TAGOLOGY_POST_TYPE );
+    $new_rules['author/([^/]+)/?$'] = sprintf( 'index.php?author_name=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE );  
+    
+    // bookmarklet URLs
+    //
+    
     // bookmarklet javascript
     $new_rules['bookmarklet/([a-z]+)/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=bookmarklet/$matches[1]';
-    // short link
-    // e.g. http://example.com/s1234
+    // short link, e.g. http://example.com/s1234
     $new_rules['s([0-9]+)/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=shortlink&p=$matches[1]';
     $new_rules['s/([0-9]+)/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=shortlink&p=$matches[1]'; // deprecated
     

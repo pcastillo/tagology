@@ -30,23 +30,6 @@ function savory_social($bookmark) {
   echo '<img src="' . WP_THEME_URL . '/bookmarklet/twitter.png"/>';
 }
 
-/*
- * echo a login form
- */
-function tagology_login_form() {
-  // see: http://www.wprecipes.com/add-a-login-form-on-your-wordpress-theme
-?>
-<?php if (!(current_user_can('level_0'))){ get_currentuserinfo(); if (empty($user_login)) { $user_login = ''; } ?>
-<form action="<?php echo get_option('home'); ?>/wp-login.php" method="post">
-<label for="log">username</label> <input type="text" name="log" id="log" value="<?php echo esc_html(stripslashes($user_login), 1) ?>" size="20" />
-<label for="pwd">password</label> <input type="password" name="pwd" id="pwd" size="20" />
-<input type="submit" name="submit" value="Login" class="button" />
-<input type="hidden" name="redirect_to" value="<?php echo $_SERVER['REQUEST_URI']; ?>" />
-</form>
-<a href="<?php echo get_option('home'); ?>/wp-login.php?action=lostpassword">Recover password</a>
-<?php }
-}
-
 // get parameters
 global $wp_query;
 global $tagology_plugin;

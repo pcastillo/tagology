@@ -6,6 +6,7 @@ elseif (is_page() ) { single_post_title(); echo ' - ' ; bloginfo('name'); }
 elseif (is_category() ) { echo ucwords(single_cat_title('',false)); echo ' Category - ' ; bloginfo('name'); }
 elseif (is_tag() ) { echo "Tagged with "; echo ucwords(tagology_tag_title('',false)); echo " - " ; bloginfo('name'); }
 elseif (is_day() || is_month() || is_year() ) { echo 'Archives:'; wp_title(''); }	
+elseif (is_author()) { echo 'Profile of '; wp_title(''); }	
 else { wp_title('',true); } ?></title>
 <link href='http://fonts.googleapis.com/css?family=Cabin:bold' rel='stylesheet' type='text/css'>
 <?php wp_head(); ?>
@@ -16,7 +17,29 @@ else { wp_title('',true); } ?></title>
 <div id="dash">
 <div class="inner">
 <div class="inner2">	
-<!-- dashboard -->
+<?php $heading_tag = ( is_home() || is_front_page() ) ? 'h1' : 'div'; ?>
+<<?php echo $heading_tag; ?> id="site-title">
+  <span>
+    <a href="<?php echo home_url( '/' ); ?>" title="<?php echo esc_attr( get_bloginfo( 'name', 'display' ) ); ?>" rel="home"><?php bloginfo( 'name' ); ?></a>
+  </span>  
+</<?php echo $heading_tag; ?>>
+<?php the_tagology_brand(); ?>
+<span id="dashmeta">
+<?php 
+  if (is_user_logged_in()) { 
+    wp_get_current_user();
+    global $current_user;
+    echo $current_user->display_name;
+  ?> 
+  <span class="bar">|</span>
+  <a href="<?php echo wp_logout_url( get_permalink() ); ?>" title="Logout">logout</a>
+<?php } else { ?>
+<span id="loginformwrapper" style="display:none;">
+<?php tagology_login_form(); ?>
+</span>
+<a id="loginlink" href="<?php echo wp_login_url( get_permalink() ); ?>" title="Login">login</a>
+<?php } ?>
+</span> <!-- .dashmeta -->
 </div>
 </div>
 </div>
@@ -28,7 +51,7 @@ else { wp_title('',true); } ?></title>
 <div id="header">
 <div class="inner">
 <div class="inner2">	
-<?php get_template_part( 'theme-header' ); ?>
+<?php /* get_template_part( 'theme-header' ); */ ?>
 </div>
 </div>
 </div>
@@ -40,7 +63,7 @@ else { wp_title('',true); } ?></title>
 <div id="subheader">
 <div class="inner">
 <div class="inner2">	
-<?php get_template_part( 'theme-subheader' ); ?>
+<?php /* get_template_part( 'theme-subheader' ); */ ?>
 </div>
 </div>
 </div>
