@@ -1,9 +1,8 @@
 Tagology Changes
 =========
 
-staged
------------
 0.1.1280
+-----------
 
 * author page browser title fixes
 * allow commenting
