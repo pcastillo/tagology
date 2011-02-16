@@ -1,15 +1,47 @@
 <?php
 
-// the plugin is deployed with the theme
+// plugin packaged with the theme
 require_once( TEMPLATEPATH . '/plugin.tagology.php' );
 
+// constants
 if(!defined('WP_THEME_URL'))
   define( 'WP_THEME_URL', get_stylesheet_directory_uri() );
 
+/*
+ * setup styles, scripts, filters and actions for clients
+ */
+if ( !is_admin() ) {
+  
+  // scripts
+  wp_register_script( 'tagology-script' , WP_THEME_URL . '/tagology.js', array( 'jquery' ) );
+  wp_enqueue_script( 'tagology-script' );
 
-// filters
+  wp_register_style( 'stylebase', WP_THEME_URL . '/stylebase.css' );
+  wp_enqueue_style( 'stylebase' );
 
-add_filter( 'cancel_comment_reply_link', function( $html ) { return ''; } );
+  wp_register_style( 'themestyle', get_bloginfo('stylesheet_url') );
+  wp_enqueue_style( 'themestyle' );
+
+  // disable the richtext editor
+  add_filter( 'user_can_richedit', create_function( '$a', 'return false;' ));
+
+  // modify head actions
+  remove_action( 'wp_head', 'feed_links_extra', 3 );
+  remove_action( 'wp_head', 'feed_links', 2 );
+  remove_action( 'wp_head', 'rsd_link');
+  remove_action( 'wp_head', 'wlwmanifest_link');
+  remove_action( 'wp_head', 'index_rel_link');
+  remove_action( 'wp_head', 'parent_post_rel_link', 10 );
+  remove_action( 'wp_head', 'start_post_rel_link', 10 );
+  remove_action( 'wp_head', 'adjacent_posts_rel_link_wp_head', 10 );
+  remove_action( 'wp_head', 'rel_canonical' );
+  remove_theme_support('automatic-feed-links');
+  remove_action('wp_head', 'wp_generator');
+
+  // remove filters
+  add_filter('login_errors', create_function('$a', "return null;"));  
+  add_filter( 'cancel_comment_reply_link', function( $html ) { return ''; } );
+}
 
 /*
  * echo the tagology path - used in the loop
@@ -130,7 +162,7 @@ function the_tagology_facebook_share_link($bookmark = false) {
   // create facebook share link
   $url = tagology_mod_url ($url);
   $url = sprintf ('http://www.facebook.com/sharer.php?u=%s', urlencode ($url) );
-  $url = sprintf ('<a href="%s">Facebook</a>', esc_attr( $url) );
+  $url = sprintf ('<a target="facebook" href="%s">Facebook</a>', esc_attr( $url) );
   echo $url;
 }
 
@@ -276,45 +308,6 @@ function tagology_short_text($text, $length, $after = '') {
 }
 
 /*
- * register styles
- */
-if ( !is_admin() ) {
-  
-  // scripts
-  wp_register_script( 'tagology-script' , WP_THEME_URL . '/tagology.js', array( 'jquery' ) );
-  wp_enqueue_script( 'tagology-script' );
-  
-  // styles
-  wp_register_style( 'blueprint', WP_THEME_URL . '/blueprint_1.0.css' );
-  wp_enqueue_style( 'blueprint' );
-
-  wp_register_style( 'stylebase', WP_THEME_URL . '/stylebase.css' );
-  wp_enqueue_style( 'stylebase' );
-
-  wp_register_style( 'themestyle', get_bloginfo('stylesheet_url') );
-  wp_enqueue_style( 'themestyle' );
-
-  // disable the richtext editor
-  add_filter( 'user_can_richedit', create_function( '$a', 'return false;' ));
-
-  // modify head actions
-  remove_action( 'wp_head', 'feed_links_extra', 3 );
-  remove_action( 'wp_head', 'feed_links', 2 );
-  remove_action( 'wp_head', 'rsd_link');
-  remove_action( 'wp_head', 'wlwmanifest_link');
-  remove_action( 'wp_head', 'index_rel_link');
-  remove_action( 'wp_head', 'parent_post_rel_link', 10 );
-  remove_action( 'wp_head', 'start_post_rel_link', 10 );
-  remove_action( 'wp_head', 'adjacent_posts_rel_link_wp_head', 10 );
-  remove_action( 'wp_head', 'rel_canonical' );
-  remove_theme_support('automatic-feed-links');
-  remove_action('wp_head', 'wp_generator');
-
-  // remove filters
-  add_filter('login_errors', create_function('$a', "return null;"));
-}
-
-/*
  * tagology comment
  */
 function tagology_comment( $comment, $args, $depth ) {
@@ -334,8 +327,10 @@ function tagology_comment( $comment, $args, $depth ) {
 		<?php endif; ?>
 		<div class="comment-meta commentmetadata"><span class="bar">|</span><?php
         printf( '%s' , tagology_get_time_diff_string(get_comment_time('U'), time()));
-      ?><span class="bar">|</span><a href="<?php echo esc_url( get_comment_link( $comment->comment_ID ) ); ?>">link</a>
-      <span class="bar">|</span><span class="reply"><?php comment_reply_link( array_merge( $args, array( 'depth' => $depth, 'max_depth' => $args['max_depth'] ) ) ); ?></span>
+      ?><span class="tools">
+          <span class="bar">|</span><a href="<?php echo esc_url( get_comment_link( $comment->comment_ID ) ); ?>">link</a>
+          <span class="bar">|</span><span class="reply"><?php comment_reply_link( array_merge( $args, array( 'depth' => $depth, 'max_depth' => $args['max_depth'] ) ) ); ?></span>
+        </span>
     </div><!-- .comment-meta .commentmetadata -->
 		<div class="comment-body"><?php comment_text(); ?></div>
 	

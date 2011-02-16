@@ -79,6 +79,7 @@ A:hover, A:active {
 }
 
 .savorypost .tools { display: none; /* show on hover */ }
+.comment .tools {display: none; /* show on hover */ }
 
 .favicon {
   vertical-align: middle;
@@ -627,7 +628,8 @@ textarea { width: auto; height: auto; border: 1px solid #aaa; }
 .comment-body {
 	margin-top: .3em;
 }
-.comment-body P { margin: 0; padding: 0; }
+
+.comment-body P { margin: 0; padding: 0; font-size: 1.1em; }
 
 #commentform P {
 	margin-bottom: .5em;

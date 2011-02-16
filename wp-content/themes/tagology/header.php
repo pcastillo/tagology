@@ -9,6 +9,10 @@ elseif (is_day() || is_month() || is_year() ) { echo 'Archives:'; wp_title(''); 
 elseif (is_author()) { echo 'Profile of '; wp_title(''); }	
 else { wp_title('',true); } ?></title>
 <link href='http://fonts.googleapis.com/css?family=Cabin:bold' rel='stylesheet' type='text/css'>
+<link rel='stylesheet' id='blueprint-css'  href='<?php echo WP_THEME_URL; ?>/blueprint_1.0.css' type='text/css' media='screen,projection' /> 
+<!--[if lt IE 8]>
+  <link rel="stylesheet" href="<?php echo WP_THEME_URL; ?>/blueprint_1.0.ie.css" type="text/css" media="screen, projection">
+<![endif]-->
 <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>

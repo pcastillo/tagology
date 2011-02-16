@@ -13,7 +13,7 @@ define ('TAGOLOGY_POST_TYPE_SLUG', 'url');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.1234
+Version: 0.1.1280
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -35,7 +35,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.1234';
+	public $plugin_version = '0.1.1280';
 	/*
 	* constructor
 	*/
@@ -195,7 +195,72 @@ class WpTagologyPlugin {
     add_filter('query_vars', array(&$this, 'query_vars_filter'));	
 		add_action('template_redirect', array(&$this, 'template_redirect_action'), 9 /* before canonical */);
     add_action('tagology_embeds', array(&$this, 'tagology_embeds_action')); 
+    
+    // query filters
+    add_filter( 'posts_join', array(&$this, 'posts_join_filter' ));
+    add_filter( 'posts_where', array(&$this, 'posts_where_filter' ));
+    add_filter( 'posts_distinct', array(&$this, 'posts_distinct_filter' ));     
   }	
+  
+  /*
+   * posts_distinct_filter
+   */
+  function posts_distinct_filter( $distinct ) {
+    
+    if (!is_search()) 
+      return $distinct;
+    
+    global $wpdb;
+    
+    $distinct = " DISTINCTROW $wpdb->posts.ID, ";
+    return $distinct;
+  }
+  
+  /*
+   * posts_where_filter
+   */
+  function posts_where_filter( $where ) {
+    
+    if (!is_search()) 
+      return $where;
+
+    global $wp_query;    
+    $term = $wp_query->query_vars['search_terms'][0];    
+    $post_type = $wp_query->query_vars['post_type'];
+    
+    
+    if (empty($term) || empty($post_type))
+      return $where;
+    
+    global $wpdb;
+      
+    $where = "AND $wpdb->posts.post_type = '{$post_type}' ";
+    $where .= "AND $wpdb->posts.post_status = 'publish' ";    
+    $where .= "AND ( $wpdb->posts.post_title LIKE '%{$term}%' OR $wpdb->terms.name like '%{$term}%' ) ";
+    return $where;
+  }
+  
+  /*
+   * posts_join_filter
+   */
+  function posts_join_filter( $join ) {
+    
+    if (!is_search()) 
+      return $join;
+    
+    global $wpdb;
+    
+    // join posts to relationships
+    $join .= " LEFT JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) ";
+    
+    // join relationships to taxonomy
+    $join .= " LEFT JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) ";
+    
+    // join taxonomy to terms
+    $join .= " LEFT JOIN $wpdb->terms ON ($wpdb->term_taxonomy.term_id = $wpdb->terms.term_id) ";
+    
+    return $join;
+  }
   
 	/*
 	* query vars filter
@@ -207,19 +272,17 @@ class WpTagologyPlugin {
     $qvars[] = 'title';
     $qvars[] = 'tags';
     $qvars[] = 'site';
+    $qvars[] = 'c';
 		return $qvars;
 	}
 
   /*
    * url_rewrite_filter
    */
-  function url_rewrite_filter($rules) {
+  function url_rewrite_filter($rules) {    
     
     // build from scratch
 		$new_rules = array();
-    
-    // bookmarks lists
-    //
     
     // front page
 		$new_rules['/?$'] = sprintf( 'index.php?post_type=%s', TAGOLOGY_POST_TYPE );
@@ -244,13 +307,16 @@ class WpTagologyPlugin {
     //
     
     // bookmarklet javascript
-    $new_rules['bookmarklet/([a-z]+)/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=bookmarklet/$matches[1]';
-    // short link, e.g. http://example.com/s1234
-    $new_rules['s([0-9]+)/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=shortlink&p=$matches[1]';
-    $new_rules['s/([0-9]+)/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=shortlink&p=$matches[1]'; // deprecated
+    $new_rules['tagology/bookmarklet/([a-z]+)/?$'] = sprintf( 'index.php?%s=bookmarklet/$matches[1]', TAGOLOGY_QUERY_VAR );
+    // short link to bookmarked URL, e.g. http://mysite.com/s1234 --> http://example.com/foobar
+    $new_rules['s([0-9]+)/?$'] = sprintf( 'index.php?%s=shortlink&p=$matches[1]', TAGOLOGY_QUERY_VAR );
+    $new_rules['s/([0-9]+)/?$'] = sprintf( 'index.php?%s=shortlink&p=$matches[1]', TAGOLOGY_QUERY_VAR ); // deprecated
+    // short link to bookmark
+    $new_rules['b([0-9]+)/?$'] = sprintf( 'index.php?p=$matches[1]' );
+    //$new_rules['b([0-9]+)c([0-9]+)/?$'] = sprintf( 'index.php?p=$matches[1]#comment-$matches[2]' );
     
     // live search
-    $new_rules['livesearch/?$'] = 'index.php?'.TAGOLOGY_QUERY_VAR.'=livesearch'; // deprecated
+    $new_rules['livesearch/?$'] = sprintf ('index.php?%s=livesearch', TAGOLOGY_QUERY_VAR); // deprecated
     
     // return new rules
 		return $new_rules;
@@ -731,7 +797,7 @@ class WpTagologyPlugin {
     $id = false;
     $id = wp_insert_post( $my_post );
     if (!$id)
-      return $false; // ERROR
+      return false; // ERROR
     
     // add metadata
     update_post_meta($id, TAGOLOG_METAKEY_HASH, $hash);    
