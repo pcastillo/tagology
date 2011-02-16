@@ -3,13 +3,16 @@ Tagology Changes
 
 staged
 -----------
-x.x.xxxx
+0.1.1280
 
 * author page browser title fixes
 * allow commenting
 * various CSS updates
 * added inline login/logout link (degrades to WP login page)
 * enhanced UI, CSS, dashboard, header
+* added tools for each comments
+* added blueprint IE stylesheet
+* search query now searches tags
 
 
 0.1.1090
