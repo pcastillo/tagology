@@ -6,6 +6,7 @@ define ('TAGOLOGY_LIVESEARCH_VAR', 'q');
 define ('TAGOLOG_METAKEY_HASH', '_SAVORY_HASH');
 define ('TAGOLOGY_METAKEY_URL', '_SAVORY_URL');
 define ('TAGOLOGY_POST_TYPE_SLUG', 'url');
+define ('TAGOLOGY_COAUTHOR_TAXONOMY', 'author');
 
 // BEGIN auto-generated code
 
@@ -13,7 +14,7 @@ define ('TAGOLOGY_POST_TYPE_SLUG', 'url');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.1280
+Version: 0.1.1350
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -35,7 +36,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.1280';
+	public $plugin_version = '0.1.1350';
 	/*
 	* constructor
 	*/
@@ -199,8 +200,20 @@ class WpTagologyPlugin {
     // query filters
     add_filter( 'posts_join', array(&$this, 'posts_join_filter' ));
     add_filter( 'posts_where', array(&$this, 'posts_where_filter' ));
-    add_filter( 'posts_distinct', array(&$this, 'posts_distinct_filter' ));     
+    //add_filter( 'posts_distinct', array(&$this, 'posts_distinct_filter' ));    
+    add_filter( 'posts_groupby', array(&$this, 'posts_groupby_filter' )); 
   }	
+  
+  /*
+   * posts_groupby_filter
+   */
+  function posts_groupby_filter( $groupby ) {    
+    if ( is_search() || is_author()) {
+      global $wpdb;		
+			$groupby = $wpdb->posts .'.ID';
+    }
+    return $groupby;
+  }
   
   /*
    * posts_distinct_filter
@@ -220,23 +233,33 @@ class WpTagologyPlugin {
    * posts_where_filter
    */
   function posts_where_filter( $where ) {
+    global $wp_query;  
+    global $wpdb; 
     
-    if (!is_search()) 
-      return $where;
-
-    global $wp_query;    
-    $term = $wp_query->query_vars['search_terms'][0];    
-    $post_type = $wp_query->query_vars['post_type'];
-    
-    
-    if (empty($term) || empty($post_type))
-      return $where;
-    
-    global $wpdb;
+    if ( is_search() ) {
+     
+      $term = $wp_query->query_vars['search_terms'][0];    
+      $post_type = $wp_query->query_vars['post_type'];      
       
-    $where = "AND $wpdb->posts.post_type = '{$post_type}' ";
-    $where .= "AND $wpdb->posts.post_status = 'publish' ";    
-    $where .= "AND ( $wpdb->posts.post_title LIKE '%{$term}%' OR $wpdb->terms.name like '%{$term}%' ) ";
+      if (empty($term) || empty($post_type))
+        return $where;
+        
+      $where = "AND $wpdb->posts.post_type = '{$post_type}' ";
+      $where .= "AND $wpdb->posts.post_status = 'publish' ";    
+      $where .= "AND ( $wpdb->posts.post_title LIKE '%{$term}%' OR $wpdb->terms.name like '%{$term}%' ) ";
+      
+    }
+    
+    if( is_author() ) {
+			$author = get_userdata($wp_query->query_vars['author']);
+			$term = get_term_by('name', $author->user_login, TAGOLOGY_COAUTHOR_TAXONOMY);
+				
+			if( $author && $term ) {				
+        $where = preg_replace('/(\b(?:' . $wpdb->posts . '\.)?post_author\s*=\s*(\d+))/', '($1 OR (' . $wpdb->term_taxonomy . '.taxonomy = \''. TAGOLOGY_COAUTHOR_TAXONOMY.'\' AND '. $wpdb->term_taxonomy .'.term_id = \''. $term->term_id .'\'))', $where, 1);
+
+			}
+		}    
+    
     return $where;
   }
   
@@ -244,21 +267,28 @@ class WpTagologyPlugin {
    * posts_join_filter
    */
   function posts_join_filter( $join ) {
-    
-    if (!is_search()) 
-      return $join;
-    
     global $wpdb;
     
-    // join posts to relationships
-    $join .= " LEFT JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) ";
+    if( is_author() ) {
+      
+			$join .= " INNER JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) ";
+      $join .= " INNER JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id)";		
+		}
     
-    // join relationships to taxonomy
-    $join .= " LEFT JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) ";
     
-    // join taxonomy to terms
-    $join .= " LEFT JOIN $wpdb->terms ON ($wpdb->term_taxonomy.term_id = $wpdb->terms.term_id) ";
+    if ( is_search() ) {  
+      
+      // join posts to relationships
+      $join .= " LEFT JOIN $wpdb->term_relationships ON ($wpdb->posts.ID = $wpdb->term_relationships.object_id) ";
+      
+      // join relationships to taxonomy
+      $join .= " LEFT JOIN $wpdb->term_taxonomy ON ($wpdb->term_relationships.term_taxonomy_id = $wpdb->term_taxonomy.term_taxonomy_id) ";
+      
+      // join taxonomy to terms
+      $join .= " LEFT JOIN $wpdb->terms ON ($wpdb->term_taxonomy.term_id = $wpdb->terms.term_id) ";
     
+    }
+  
     return $join;
   }
   
@@ -273,6 +303,8 @@ class WpTagologyPlugin {
     $qvars[] = 'tags';
     $qvars[] = 'site';
     $qvars[] = 'c';
+    $qvars[] = '_wpnonce';
+    $qvars[] = '_ajax';
 		return $qvars;
 	}
 
@@ -299,10 +331,15 @@ class WpTagologyPlugin {
     // single links
     //$new_rules['url/([^/]+)(/[0-9]+)?/?$'] = 'index.php?post_type=savorypost&savorypost=$matches[1]&page=$matches[2]';
     $new_rules['url/([^/]+)/?$'] = sprintf( 'index.php?%s=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE, TAGOLOGY_POST_TYPE );
-    // author 
-    $new_rules['author/([^/]+)/page/?([0-9]{1,})/?$'] = sprintf( 'index.php?author_name=$matches[1]&paged=$matches[2]&post_type=%s', TAGOLOGY_POST_TYPE );
-    $new_rules['author/([^/]+)/?$'] = sprintf( 'index.php?author_name=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE );  
     
+    // author - put at bottom and removed the need for the 'author/' path
+    //$new_rules['author/([^/]+)/page/?([0-9]{1,})/?$'] = sprintf( 'index.php?author_name=$matches[1]&paged=$matches[2]&post_type=%s', TAGOLOGY_POST_TYPE );
+    //$new_rules['author/([^/]+)/?$'] = sprintf( 'index.php?author_name=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE );  
+    
+    // save bookmark AJAX
+    $new_rules['save/([0-9]+)/(.+)/?$'] = sprintf( 'index.php?%s=save&p=$matches[1]&post_type=%s&_wpnonce=$matches[2]', TAGOLOGY_QUERY_VAR, TAGOLOGY_POST_TYPE );
+    
+    //
     // bookmarklet URLs
     //
     
@@ -317,6 +354,10 @@ class WpTagologyPlugin {
     
     // live search
     $new_rules['livesearch/?$'] = sprintf ('index.php?%s=livesearch', TAGOLOGY_QUERY_VAR); // deprecated
+    
+    // author 
+    $new_rules['([^/]+)/page/?([0-9]{1,})/?$'] = sprintf( 'index.php?author_name=$matches[1]&paged=$matches[2]&post_type=%s', TAGOLOGY_POST_TYPE );
+    $new_rules['([^/]+)/?$'] = sprintf( 'index.php?author_name=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE );  
     
     // return new rules
 		return $new_rules;
@@ -346,11 +387,86 @@ class WpTagologyPlugin {
       case 'livesearch':
         $this->livesearch_redirect();
         break;
+      case 'save':
+        $this->save_redirect();
+        break;
       //default:
       //  wp_die("Not Found.");
       //  break;
 		}
 	}
+  
+  /*
+   * save redirect
+   */
+  function save_redirect() {  
+        
+    // verify nonce
+    $nonce = get_query_var('_wpnonce');
+    if (! wp_verify_nonce($nonce, 'tagologysave') ) die('ERROR'); 
+
+    global $wp_query;
+    
+    // did get a post
+    $bookmark = $wp_query->post;
+    if (!$bookmark)
+      die();
+    
+    // is multi-user
+    if (!$this->is_multi_user())
+      die();
+    
+    // get post author
+    $user_id = $bookmark->post_author;
+    $authordata = get_userdata( $user_id );
+    $author_username = $authordata->user_login;
+    
+    // get current logged in user
+    global $current_user;
+    get_currentuserinfo();  
+    $logged_in_username = $current_user->user_login;
+    
+    // make sure they are different, i.e. an author can't SAVE their own bookmark
+    if ($author_username  == $logged_in_username)
+      die();      
+    
+    // add user as a term if they don't exist
+    $insert = false;
+    if(!term_exists( $logged_in_username, TAGOLOGY_COAUTHOR_TAXONOMY ) ) {
+      //$args = array('slug' => sanitize_title($name) );		
+      $insert = wp_insert_term( $logged_in_username, TAGOLOGY_COAUTHOR_TAXONOMY );
+    }
+    
+    // print_r($insert);
+    // ad authors as post terms
+    if( !is_wp_error( $insert ) ) {
+      $set = wp_set_post_terms( $bookmark->ID, $logged_in_username, TAGOLOGY_COAUTHOR_TAXONOMY, true /* append */ );
+      print_r($set);
+    } 
+    else {
+      // noop
+    }
+    
+    // return response
+    $ajax = get_query_var( '_ajax' );
+    
+    // ajax
+    if ('1' == $ajax) {
+      
+      // echo back the count
+      $owners = $this->get_owners();
+      $count =  1 /* author */ + count($owners);
+  
+      echo $count;
+      exit();
+    }
+    
+    // refresh current page
+    $url = get_permalink();
+    if (!$url) { $url = site_url(); } /* shouldn't happen */
+    wp_redirect( $url);
+    exit();
+  }
   
   /*
    * live search redirect
@@ -373,38 +489,21 @@ class WpTagologyPlugin {
         ORDER BY wposts.post_date DESC LIMIT 0, 10
       ", TAGOLOGY_METAKEY_URL, $k, TAGOLOGY_POST_TYPE );
       
-      // $results['sql'] = $querystr; # DEBUG
-      
-      /*
-      $querystr = $wpdb->prepare("
-        SELECT wposts.* 
-        FROM $wpdb->posts wposts, $wpdb->postmeta wpostmeta
-        WHERE wposts.ID = wpostmeta.post_id 
-        AND wpostmeta.meta_key = '%s' 
-        AND wpostmeta.meta_value LIKE '%%%s%%' 
-        AND wposts.post_status = 'publish' 
-        AND wposts.post_type = '%s' 
-        ORDER BY wposts.post_date DESC
-      ", TAGOLOGY_METAKEY_URL, $k, TAGOLOGY_POST_TYPE );
-      */
-      
-      $posts = $wpdb->get_results($querystr);
-      
-      $out = array_map( 
-        function($post) { 
-          return array(
-            'title'=>$post->post_title,
-            'bookmark'=>$post->bookmark_url,
-            'link'=>get_post_permalink($post->ID),
-          );
-        }, 
-        $posts 
-      ); 
+      $posts = $wpdb->get_results($querystr);      
+      $out = array_map( array( &$this, 'live_search_results' ), $posts ); 
       $results['bookmarks'] = $out;      
     }
     
     echo json_encode($results);
     die();
+  }
+  
+  function live_search_results( $post ) {
+    return array(
+      'title'=>$post->post_title,
+      'bookmark'=>$post->bookmark_url,
+      'link'=>get_post_permalink($post->ID),
+    );
   }
   
   /*
@@ -434,7 +533,26 @@ class WpTagologyPlugin {
     $daylink = home_url( user_trailingslashit($daylink, 'day') );    
     return $daylink;
   }
+ 
+  /*
+   * get owners
+   */
+  function get_owners($bookmark = false) {
+    if (!$bookmark) {
+      global $post;
+      $bookmark = $post;
+    }
+    return wp_get_object_terms( $bookmark->ID, TAGOLOGY_COAUTHOR_TAXONOMY );
+  }
   
+   /*
+   * in multi-user mode?
+   */
+  function is_multi_user() {
+    $options = $this->get_options();
+    return ($options['is_multiuser']);
+  }
+ 
   /*
    * get short link for a bookmark
    */
@@ -519,6 +637,7 @@ class WpTagologyPlugin {
    */
   function custom_any_init() {
     $this->register_custom_post_type();  
+    $this->register_custom_taxonomy();
   }
   
   /*
@@ -701,6 +820,7 @@ class WpTagologyPlugin {
 
   /*
    * return a function that prepends a string to a tag object
+   * PHP 5.3
    */
   function hash_tag_f($prefix = '') {
     $f = function($a) use($prefix) {
@@ -708,6 +828,14 @@ class WpTagologyPlugin {
     };
     return $f;
   }
+  
+  function prefix_tag_hash( $tag ) {
+    return '#' . $tag->name;
+  }
+
+  function prefix_tag( $tag ) {
+    return $tag->name;
+  }  
 
   /*
    * return list of tags
@@ -719,7 +847,7 @@ class WpTagologyPlugin {
     // get list of tags prefixed with a hash '#'
     $tags = get_the_tags($bookmark->ID);  
     if ($tags) 
-      $tags = array_unique(array_values(array_map($this->hash_tag_f(), $tags)));
+      $tags = array_unique(array_values(array_map( array(&$this, 'prefix_tag' ), $tags)));
     
     return implode(' ', $tags);
   }
@@ -744,7 +872,7 @@ class WpTagologyPlugin {
     // get list of tags prefixed with a hash '#'
     $tags = get_the_tags($bookmark->ID);  
     if ($tags) {      
-      $tags = array_unique(array_values(array_map($this->hash_tag_f('#'), $tags)));
+      $tags = array_unique(array_values(array_map(array( &$this, 'prefix_tag_hash') , $tags)));
       $tags = implode(' ', $tags);
       $msg .= ' '. $tags;
     }
@@ -856,6 +984,21 @@ class WpTagologyPlugin {
     $this->import_bookmarks_from_url($file);
   }
   
+  /*
+   * custom taxonomy to handle multiple authors
+   */
+  function register_custom_taxonomy() {
+     if( !taxonomy_exists( TAGOLOGY_COAUTHOR_TAXONOMY )) {
+      register_taxonomy( TAGOLOGY_COAUTHOR_TAXONOMY, TAGOLOGY_POST_TYPE, array(
+        'hierarchical' => false, 
+        'label' => false, 
+        'query_var' => false, 
+        'rewrite' => false, 
+        'sort' => true ) 
+      );
+    }
+  } 
+
   /*
    * custom post type for templates
    */
