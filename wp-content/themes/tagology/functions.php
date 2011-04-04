@@ -40,7 +40,14 @@ if ( !is_admin() ) {
 
   // remove filters
   add_filter('login_errors', create_function('$a', "return null;"));  
-  add_filter( 'cancel_comment_reply_link', function( $html ) { return ''; } );
+  add_filter( 'cancel_comment_reply_link', 'tagology_empty_string' );
+}
+
+/*
+ * return an empty string
+ */
+function tagology_empty_string( $html ) {
+  return '';
 }
 
 /*
