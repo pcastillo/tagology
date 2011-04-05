@@ -14,7 +14,7 @@ define ('TAGOLOGY_COAUTHOR_TAXONOMY', 'author');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.1350
+Version: 0.1.1352
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -36,7 +36,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.1350';
+	public $plugin_version = '0.1.1352';
 	/*
 	* constructor
 	*/
@@ -821,13 +821,14 @@ class WpTagologyPlugin {
   /*
    * return a function that prepends a string to a tag object
    * PHP 5.3
-   */
+
   function hash_tag_f($prefix = '') {
     $f = function($a) use($prefix) {
       return $prefix . $a->name;
     };
     return $f;
   }
+  */
   
   function prefix_tag_hash( $tag ) {
     return '#' . $tag->name;
