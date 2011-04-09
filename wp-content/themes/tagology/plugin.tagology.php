@@ -14,7 +14,7 @@ define ('TAGOLOGY_COAUTHOR_TAXONOMY', 'author');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.1352
+Version: 0.1.1356
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -36,7 +36,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.1352';
+	public $plugin_version = '0.1.1356';
 	/*
 	* constructor
 	*/
@@ -332,6 +332,10 @@ class WpTagologyPlugin {
     //$new_rules['url/([^/]+)(/[0-9]+)?/?$'] = 'index.php?post_type=savorypost&savorypost=$matches[1]&page=$matches[2]';
     $new_rules['url/([^/]+)/?$'] = sprintf( 'index.php?%s=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE, TAGOLOGY_POST_TYPE );
     
+    // feeds
+    $new_rules['feed/?$'] = sprintf( 'index.php?%s=feed&post_type=%s', TAGOLOGY_QUERY_VAR, TAGOLOGY_POST_TYPE);
+    
+    
     // author - put at bottom and removed the need for the 'author/' path
     //$new_rules['author/([^/]+)/page/?([0-9]{1,})/?$'] = sprintf( 'index.php?author_name=$matches[1]&paged=$matches[2]&post_type=%s', TAGOLOGY_POST_TYPE );
     //$new_rules['author/([^/]+)/?$'] = sprintf( 'index.php?author_name=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE );  
@@ -358,6 +362,8 @@ class WpTagologyPlugin {
     // author 
     $new_rules['([^/]+)/page/?([0-9]{1,})/?$'] = sprintf( 'index.php?author_name=$matches[1]&paged=$matches[2]&post_type=%s', TAGOLOGY_POST_TYPE );
     $new_rules['([^/]+)/?$'] = sprintf( 'index.php?author_name=$matches[1]&post_type=%s', TAGOLOGY_POST_TYPE );  
+    
+
     
     // return new rules
 		return $new_rules;
@@ -390,11 +396,22 @@ class WpTagologyPlugin {
       case 'save':
         $this->save_redirect();
         break;
+      case 'feed':
+        $this->feed_redirect();
+        break;
       //default:
       //  wp_die("Not Found.");
       //  break;
 		}
 	}
+  
+  /*
+   * feed redirect
+   */
+  function feed_redirect() {
+    include( 'feed-atom.php' );
+    exit();
+  }
   
   /*
    * save redirect
