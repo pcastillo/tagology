@@ -78,6 +78,13 @@ function the_tagology_path() {
 }
 
 /*
+ * echo the url bookmark feed
+ */
+function the_tagology_feed_url() {
+  echo site_url('/feed');
+}
+
+/*
  * echo the brand
  */
 function the_tagology_brand() { ?>

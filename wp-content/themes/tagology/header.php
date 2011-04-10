@@ -8,6 +8,7 @@ elseif (is_tag() ) { echo "Tagged with "; echo ucwords(tagology_tag_title('',fal
 elseif (is_day() || is_month() || is_year() ) { echo 'Archives:'; wp_title(''); }	
 elseif (is_author()) { echo 'Profile of '; wp_title(''); }	
 else { wp_title('',true); } ?></title>
+<link rel="alternate" type="application/atom+xml" href="<?php the_tagology_feed_url(); ?>" /> 
 <link href='http://fonts.googleapis.com/css?family=Cabin:bold' rel='stylesheet' type='text/css'>
 <link rel='stylesheet' id='blueprint-css'  href='<?php echo WP_THEME_URL; ?>/blueprint_1.0.css' type='text/css' media='screen,projection' /> 
 <!--[if lt IE 8]>
