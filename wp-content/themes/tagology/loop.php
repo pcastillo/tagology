@@ -2,6 +2,7 @@
 <?php the_date('M j'); ?>
 </div>
 <div <?php post_class(); ?> id="post-<?php the_ID(); ?>">
+<div class="pop"><span><?php the_saved_count(); ?></span></div>
 <div class="title">
 <a rel="external nofollow" name="post-<?php the_ID(); ?>" href="<?php the_tagology_link(); ?>"><?php the_title(); ?></a>
 <span class="path"><?php the_tagology_path(); ?></span>
@@ -13,7 +14,11 @@
 <span class="tools"> <?php edit_post_link( 'edit', '<span class="bar">|</span>', ''); ?>
 <span class="bar">|</span><?php the_tagology_tweet_link(); ?>
 <span class="bar">|</span><?php the_tagology_facebook_share_link(); ?>
+<?php tagology_save_link('<span class="bar">|</span>'); ?>
 </span></div>
+
+
+
 <ul class="tags">
 <?php the_tags( '<li>','</li><li>','</li>' ); ?>
 <?php if (is_tagology_multi_user()) : ?>

@@ -40,13 +40,13 @@ if ( !is_admin() ) {
 
   // remove filters
   add_filter('login_errors', create_function('$a', "return null;"));  
-  add_filter( 'cancel_comment_reply_link', 'tagology_empty_string' );
+  add_filter( 'cancel_comment_reply_link', 'tagology_return_empty' );
 }
 
 /*
- * return an empty string
+ * return empty string
  */
-function tagology_empty_string( $html ) {
+function tagology_return_empty() {
   return '';
 }
 
@@ -85,12 +85,58 @@ function the_tagology_brand() { ?>
 <?php }
 
 /*
+ * echo the owner count
+ */
+function the_saved_count() {
+  global $tagology_plugin;
+  $owners = $tagology_plugin->get_owners();
+  echo 1 /* author */ + count($owners);
+}
+
+/*
+ * is not the bookmark submitter, used in multi_user mode - loop
+ */
+function is_tagology_owner() {
+  
+  // if not in multi-user mode, bookmarks have only one owner
+  if (!is_tagology_multi_user())
+    return true;
+  
+  // get logged in user name
+  global $current_user;
+  get_currentuserinfo();  
+  
+  if (0 == $current_user->ID)
+    return false;
+    
+  $logged_in_username = $current_user->user_login;
+  
+  // get post author
+  global $authordata;
+  $author_username = $authordata->user_login;
+  
+  // return TRUE if the users are the same
+  return $logged_in_username == $author_username;
+}
+
+/*
+ * the SAVE link - loop
+ */
+function tagology_save_link($before = '', $after = '') {
+  global $post;
+  if (!is_tagology_owner()) {
+    $nonce = wp_create_nonce('tagologysave');
+    $link = sprintf( '%s/save/%s/%s',  site_url(), $post->ID, $nonce);
+    printf ('%s<a href="%s" class="savelink">%s</a>%s', $before, $link, 'SAVE', $after);  
+  }
+}
+
+/*
  * in multi-user mode?
  */
 function is_tagology_multi_user() {
   global $tagology_plugin;
-  $options = $tagology_plugin->get_options();
-  return ($options['is_multiuser']);
+  return $tagology_plugin->is_multi_user();
 }
 
 /*

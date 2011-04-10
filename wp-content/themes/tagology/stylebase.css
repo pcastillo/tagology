@@ -16,6 +16,17 @@ H1, H2, H3, H4, H5, .title A, #site-title {
 
 #content .title { font-size: 1.5em; }
 
+#content .pop {
+  float: right;
+  font-size: 1.5em;
+}
+
+#content .pop span {
+  background: #ccc;
+  color: white;
+  padding: 2px 4px;
+}
+
 A { 
   color: #547980;
 }

@@ -30,4 +30,19 @@ jQuery(document).ready(function($)
       $(this).find('.tools').hide();     
     }
   );
+  
+  // save link - ajaxify
+  $('.savelink').click(function(e) {
+    e.preventDefault();   
+    var pop = $(this).parent().parent().parent().find('.pop span');
+    $.get(this.href + '?_ajax=1', function (data) {
+      if (0 < data) {
+        var count = data;
+        pop.text(count); // update screen
+      }
+    });
+    
+  });
+  
+  
 });
