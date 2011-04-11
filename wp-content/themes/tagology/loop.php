@@ -2,7 +2,9 @@
 <?php the_date('M j'); ?>
 </div>
 <div <?php post_class(); ?> id="post-<?php the_ID(); ?>">
+<?php if (is_tagology_multi_user()) : ?>
 <div class="pop"><span><?php the_saved_count(); ?></span></div>
+<?php endif; ?>
 <div class="title">
 <a rel="external nofollow" name="post-<?php the_ID(); ?>" href="<?php the_tagology_link(); ?>"><?php the_title(); ?></a>
 <span class="path"><?php the_tagology_path(); ?></span>
