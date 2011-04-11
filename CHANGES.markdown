@@ -1,6 +1,13 @@
 Tagology Changes
 =========
 
+0.1.1361
+-----------
+
+* other users can SAVE links that aren't theirs in multi-user mode
+* bookmark populatity count in multi-user mode
+* compatible with PHP 5.2
+
 0.1.1280
 -----------
 

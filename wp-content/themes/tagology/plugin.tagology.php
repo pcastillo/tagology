@@ -14,7 +14,7 @@ define ('TAGOLOGY_COAUTHOR_TAXONOMY', 'author');
 Plugin Name: Tagology Plugin
 Plugin URI: http://cuppster.com
 Description: Wordpress Plugin to support Delicious-like tagging of URLs
-Version: 0.1.1357
+Version: 0.1.1364
 Author: Jason Cupp
 Author URI: http://cuppster.com
 License: Creative Commons Attribution 3.0 Unported License
@@ -36,7 +36,7 @@ if (!$tagology_plugin)
 */
 class WpTagologyPlugin {
 
-	public $plugin_version = '0.1.1357';
+	public $plugin_version = '0.1.1364';
 	/*
 	* constructor
 	*/
@@ -348,7 +348,7 @@ class WpTagologyPlugin {
     //
     
     // bookmarklet javascript
-    $new_rules['tagology/bookmarklet/([a-z]+)/?$'] = sprintf( 'index.php?%s=bookmarklet/$matches[1]', TAGOLOGY_QUERY_VAR );
+    $new_rules['bookmarklet/([a-z]+)/?$'] = sprintf( 'index.php?%s=bookmarklet/$matches[1]', TAGOLOGY_QUERY_VAR );
     // short link to bookmarked URL, e.g. http://mysite.com/s1234 --> http://example.com/foobar
     $new_rules['s([0-9]+)/?$'] = sprintf( 'index.php?%s=shortlink&p=$matches[1]', TAGOLOGY_QUERY_VAR );
     $new_rules['s/([0-9]+)/?$'] = sprintf( 'index.php?%s=shortlink&p=$matches[1]', TAGOLOGY_QUERY_VAR ); // deprecated
@@ -606,6 +606,8 @@ class WpTagologyPlugin {
    */
   function bookmarklet_redirect($basefile, $script = false) {
     
+    header("HTTP/1.0 202 OK");
+    
     $file = TEMPLATEPATH . '/' . $basefile;
     //$filesize = @filesize($file);
     
@@ -633,7 +635,7 @@ class WpTagologyPlugin {
     else
       readfile($file);
       
-    exit;
+    exit();
   }
 
   
